@@ -1,0 +1,284 @@
+{
+  "_metadata": {
+    "last_updated": "2026-01-28",
+    "update_frequency": "weekly",
+    "notes": "Prices in USD per 1 million tokens. Verify against official pricing pages before each update.",
+    "sources": {
+      "openai": "https://openai.com/api/pricing/",
+      "anthropic": "https://www.anthropic.com/pricing",
+      "google": "https://ai.google.dev/pricing",
+      "mistral": "https://mistral.ai/technology/",
+      "deepseek": "https://platform.deepseek.com/api-docs/pricing",
+      "xai": "https://docs.x.ai/docs/consumption-and-rate-limits",
+      "meta": "https://llama.meta.com/",
+      "cohere": "https://cohere.com/pricing",
+      "groq": "https://groq.com/pricing/",
+      "together": "https://www.together.ai/pricing"
+    }
+  },
+  "providers": {
+    "openai": {
+      "name": "OpenAI",
+      "website": "https://openai.com",
+      "models": {
+        "gpt-4o": {
+          "name": "GPT-4o",
+          "input_per_1m": 2.5,
+          "output_per_1m": 10.0,
+          "context_window": 128000,
+          "notes": "Flagship multimodal model"
+        },
+        "gpt-4o-mini": {
+          "name": "GPT-4o Mini",
+          "input_per_1m": 0.15,
+          "output_per_1m": 0.6,
+          "context_window": 128000,
+          "notes": "Fast and affordable"
+        },
+        "o1": {
+          "name": "o1",
+          "input_per_1m": 15.0,
+          "output_per_1m": 60.0,
+          "context_window": 200000,
+          "notes": "Advanced reasoning model"
+        },
+        "o3-mini": {
+          "name": "o3-mini",
+          "input_per_1m": 1.1,
+          "output_per_1m": 4.4,
+          "context_window": 200000,
+          "notes": "Efficient reasoning model"
+        }
+      }
+    },
+    "anthropic": {
+      "name": "Anthropic",
+      "website": "https://www.anthropic.com",
+      "models": {
+        "claude-sonnet-45": {
+          "name": "Claude Sonnet 4.5",
+          "input_per_1m": 3.0,
+          "output_per_1m": 15.0,
+          "context_window": 200000,
+          "notes": "Best balance of speed and intelligence"
+        },
+        "claude-haiku-45": {
+          "name": "Claude Haiku 4.5",
+          "input_per_1m": 1.0,
+          "output_per_1m": 5.0,
+          "context_window": 200000,
+          "notes": "Fast and cost-effective"
+        },
+        "claude-opus-45": {
+          "name": "Claude Opus 4.5",
+          "input_per_1m": 5.0,
+          "output_per_1m": 25.0,
+          "context_window": 200000,
+          "notes": "Most capable model"
+        }
+      }
+    },
+    "google": {
+      "name": "Google",
+      "website": "https://ai.google.dev",
+      "models": {
+        "gemini-2-flash": {
+          "name": "Gemini 2.0 Flash",
+          "input_per_1m": 0.075,
+          "output_per_1m": 0.3,
+          "context_window": 1000000,
+          "notes": "Fast multimodal model, 1M context"
+        },
+        "gemini-2-flash-lite": {
+          "name": "Gemini 2.0 Flash-Lite",
+          "input_per_1m": 0.1,
+          "output_per_1m": 0.4,
+          "context_window": 1000000,
+          "notes": "Most cost-efficient Google model"
+        },
+        "gemini-3-pro": {
+          "name": "Gemini 3 Pro Preview",
+          "input_per_1m": 2.0,
+          "output_per_1m": 12.0,
+          "context_window": 1000000,
+          "notes": "Premium reasoning model"
+        }
+      }
+    },
+    "mistral": {
+      "name": "Mistral",
+      "website": "https://mistral.ai",
+      "models": {
+        "mistral-large-3": {
+          "name": "Mistral Large 3",
+          "input_per_1m": 0.5,
+          "output_per_1m": 1.5,
+          "context_window": 128000,
+          "notes": "Flagship model, 75% cheaper than v2"
+        },
+        "mistral-small-31": {
+          "name": "Mistral Small 3.1",
+          "input_per_1m": 0.03,
+          "output_per_1m": 0.11,
+          "context_window": 32000,
+          "notes": "Ultra cost-effective, 24B params"
+        },
+        "mistral-nemo": {
+          "name": "Mistral Nemo",
+          "input_per_1m": 0.02,
+          "output_per_1m": 0.04,
+          "context_window": 128000,
+          "notes": "Budget option, cheapest Mistral"
+        }
+      }
+    },
+    "deepseek": {
+      "name": "DeepSeek",
+      "website": "https://www.deepseek.com",
+      "models": {
+        "deepseek-chat": {
+          "name": "DeepSeek V3",
+          "input_per_1m": 0.28,
+          "output_per_1m": 0.42,
+          "context_window": 128000,
+          "notes": "High performance, extremely low cost"
+        },
+        "deepseek-reasoner": {
+          "name": "DeepSeek R1",
+          "input_per_1m": 0.55,
+          "output_per_1m": 2.19,
+          "context_window": 64000,
+          "notes": "Reasoning model, 90% cheaper than o1"
+        }
+      }
+    },
+    "xai": {
+      "name": "xAI",
+      "website": "https://x.ai",
+      "models": {
+        "grok-4": {
+          "name": "Grok 4",
+          "input_per_1m": 3.0,
+          "output_per_1m": 15.0,
+          "context_window": 131072,
+          "notes": "Flagship model from xAI"
+        },
+        "grok-41-fast": {
+          "name": "Grok 4.1 Fast",
+          "input_per_1m": 0.2,
+          "output_per_1m": 0.5,
+          "context_window": 2000000,
+          "notes": "2M context window, budget friendly"
+        }
+      }
+    },
+    "meta": {
+      "name": "Meta (Llama)",
+      "website": "https://llama.meta.com",
+      "models": {
+        "llama-3-3-70b": {
+          "name": "Llama 3.3 70B",
+          "input_per_1m": 0.35,
+          "output_per_1m": 0.4,
+          "context_window": 128000,
+          "notes": "Open-source, highly capable"
+        },
+        "llama-3-2-90b-vision": {
+          "name": "Llama 3.2 90B Vision",
+          "input_per_1m": 0.55,
+          "output_per_1m": 0.8,
+          "context_window": 128000,
+          "notes": "Multimodal vision capabilities"
+        },
+        "llama-3-1-405b": {
+          "name": "Llama 3.1 405B",
+          "input_per_1m": 1.79,
+          "output_per_1m": 1.79,
+          "context_window": 128000,
+          "notes": "Largest open model, frontier-class"
+        }
+      }
+    },
+    "cohere": {
+      "name": "Cohere",
+      "website": "https://cohere.com",
+      "models": {
+        "command-r-plus": {
+          "name": "Command R+",
+          "input_per_1m": 2.5,
+          "output_per_1m": 10.0,
+          "context_window": 128000,
+          "notes": "Enterprise RAG optimized"
+        },
+        "command-r": {
+          "name": "Command R",
+          "input_per_1m": 0.15,
+          "output_per_1m": 0.6,
+          "context_window": 128000,
+          "notes": "Balanced performance and cost"
+        },
+        "command-r7b": {
+          "name": "Command R7B",
+          "input_per_1m": 0.0375,
+          "output_per_1m": 0.15,
+          "context_window": 128000,
+          "notes": "Ultra-fast, low latency"
+        }
+      }
+    },
+    "groq": {
+      "name": "Groq",
+      "website": "https://groq.com",
+      "models": {
+        "llama-3-3-70b-groq": {
+          "name": "Llama 3.3 70B (Groq)",
+          "input_per_1m": 0.59,
+          "output_per_1m": 0.79,
+          "context_window": 128000,
+          "notes": "Ultra-fast inference, ~500 tok/s"
+        },
+        "llama-3-1-8b-groq": {
+          "name": "Llama 3.1 8B (Groq)",
+          "input_per_1m": 0.05,
+          "output_per_1m": 0.08,
+          "context_window": 128000,
+          "notes": "Fastest inference, ~1000 tok/s"
+        },
+        "mixtral-8x7b-groq": {
+          "name": "Mixtral 8x7B (Groq)",
+          "input_per_1m": 0.24,
+          "output_per_1m": 0.24,
+          "context_window": 32000,
+          "notes": "MoE architecture, very fast"
+        }
+      }
+    },
+    "together": {
+      "name": "Together AI",
+      "website": "https://together.ai",
+      "models": {
+        "llama-3-3-70b-together": {
+          "name": "Llama 3.3 70B (Together)",
+          "input_per_1m": 0.88,
+          "output_per_1m": 0.88,
+          "context_window": 128000,
+          "notes": "Serverless, auto-scaling"
+        },
+        "qwen-2-5-72b": {
+          "name": "Qwen 2.5 72B",
+          "input_per_1m": 0.6,
+          "output_per_1m": 0.6,
+          "context_window": 32000,
+          "notes": "Strong multilingual support"
+        },
+        "deepseek-v3-together": {
+          "name": "DeepSeek V3 (Together)",
+          "input_per_1m": 0.2,
+          "output_per_1m": 0.9,
+          "context_window": 64000,
+          "notes": "Alternative hosting for DeepSeek"
+        }
+      }
+    }
+  }
+}

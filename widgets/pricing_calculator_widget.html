@@ -1,0 +1,1329 @@
+<!-- AI Pricing Calculator Widget - Simplified -->
+<div id="pricing-calculator-widget">
+  <style>
+    /* CSS Variables for easy theming */
+    #pricing-calculator-widget {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --bg-tertiary: #f3f4f6;
+      --border-color: #e5e7eb;
+      --border-radius: 12px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    #pricing-calculator-widget * {
+      box-sizing: border-box;
+    }
+
+    #pricing-calculator-widget {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0;
+      font-family: var(--font-family);
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .pcw-header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
+      color: white;
+      padding: 24px 28px;
+      text-align: center;
+    }
+
+    .pcw-header h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .pcw-header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+
+    /* Main content */
+    .pcw-content {
+      padding: 28px;
+    }
+
+    /* Input section */
+    .pcw-input-section {
+      margin-bottom: 24px;
+    }
+
+    .pcw-input-section h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .pcw-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 500px) {
+      .pcw-input-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Usage presets */
+    .pcw-presets {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pcw-preset-btn {
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-family);
+      transition: all 0.2s;
+    }
+
+    .pcw-preset-btn:hover {
+      background: var(--bg-secondary);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .pcw-preset-btn.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    .pcw-input-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pcw-input-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .pcw-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .pcw-input-wrapper input {
+      width: 100%;
+      padding: 12px 14px;
+      padding-right: 60px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: var(--font-family);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pcw-input-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .pcw-input-suffix {
+      position: absolute;
+      right: 14px;
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    /* Calculate button */
+    .pcw-calculate-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-family: var(--font-family);
+    }
+
+    .pcw-calculate-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .pcw-calculate-btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .pcw-calculate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Results section */
+    .pcw-results-section {
+      display: none;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .pcw-results-section.visible {
+      display: block;
+    }
+
+    .pcw-results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pcw-results-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .pcw-results-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .pcw-usage-summary {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-tertiary);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* Filter chips */
+    .pcw-filter-section {
+      margin-bottom: 16px;
+    }
+
+    .pcw-filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .pcw-filter-chip {
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-family);
+      transition: all 0.2s;
+    }
+
+    .pcw-filter-chip:hover {
+      background: var(--bg-secondary);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .pcw-filter-chip.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Search */
+    .pcw-search-wrapper {
+      margin-bottom: 16px;
+    }
+
+    .pcw-search-input {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px 14px;
+      padding-left: 36px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: var(--font-family);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 10px center;
+      background-size: 18px;
+    }
+
+    .pcw-search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    /* Cheapest callout */
+    .pcw-cheapest-callout {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+      border-left: 4px solid var(--success-color);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .pcw-cheapest-callout p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .pcw-cheapest-callout strong {
+      color: var(--success-color);
+    }
+
+    /* Results table */
+    .pcw-results-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .pcw-results-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .pcw-results-table th:last-child {
+      text-align: right;
+    }
+
+    .pcw-results-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .pcw-results-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .pcw-results-table tr:hover {
+      background: var(--bg-secondary);
+    }
+
+    .pcw-model-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pcw-rank {
+      font-size: 16px;
+      min-width: 28px;
+    }
+
+    .pcw-model-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pcw-model-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .pcw-provider-name {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .pcw-savings-cell {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .pcw-savings-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .pcw-savings-badge.more-expensive {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
+    }
+
+    .pcw-cost-cell {
+      text-align: right;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-primary);
+      cursor: help;
+    }
+
+    .pcw-context-cell {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .pcw-verify-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .pcw-verify-link:hover {
+      opacity: 1;
+      color: var(--primary-color);
+    }
+
+    /* Cheapest row highlight */
+    .pcw-cheapest-row {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, transparent 100%);
+    }
+
+    .pcw-cheapest-row .pcw-cost-cell {
+      color: var(--success-color);
+    }
+
+    /* Mobile card layout */
+    .pcw-results-cards {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .pcw-results-table {
+        display: none;
+      }
+
+      .pcw-results-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .pcw-result-card {
+        padding: 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--bg-primary);
+      }
+
+      .pcw-result-card.cheapest {
+        border-color: var(--success-color);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+      }
+
+      .pcw-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+
+      .pcw-card-rank {
+        font-size: 20px;
+        margin-right: 8px;
+      }
+
+      .pcw-card-model {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text-primary);
+      }
+
+      .pcw-card-provider {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .pcw-card-cost {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: right;
+      }
+
+      .pcw-result-card.cheapest .pcw-card-cost {
+        color: var(--success-color);
+      }
+
+      .pcw-card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border-color);
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+    }
+
+    /* Footer */
+    .pcw-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .pcw-footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .pcw-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Share URL */
+    .pcw-share-section {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pcw-share-section label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .pcw-share-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      background: var(--bg-primary);
+    }
+
+    .pcw-copy-btn {
+      padding: 8px 16px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+    }
+
+    .pcw-copy-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Email capture section */
+    .pcw-email-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .pcw-email-section h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .pcw-email-section p {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .pcw-email-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pcw-email-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font-family);
+    }
+
+    .pcw-email-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .pcw-email-btn {
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+      transition: background 0.2s;
+    }
+
+    .pcw-email-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .pcw-email-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .pcw-email-success {
+      display: none;
+      padding: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success-color);
+      border-radius: 6px;
+      color: var(--success-color);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .pcw-email-success.visible {
+      display: block;
+    }
+
+    .pcw-email-error {
+      display: none;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--error-color);
+    }
+
+    .pcw-email-error.visible {
+      display: block;
+    }
+
+    /* Loading state */
+    .pcw-loading {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .pcw-loading.visible {
+      display: block;
+    }
+
+    .pcw-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: pcw-spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes pcw-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error state */
+    .pcw-error {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: var(--error-color);
+      margin-top: 16px;
+    }
+
+    .pcw-error.visible {
+      display: block;
+    }
+
+    /* No results */
+    .pcw-no-results {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+  </style>
+
+  <!-- Header -->
+  <div class="pcw-header">
+    <h2>AI API Pricing Calculator</h2>
+    <p>Compare costs across OpenAI, Anthropic, Google, Mistral & more</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="pcw-content">
+    <!-- Input Section -->
+    <div class="pcw-input-section">
+      <h3>Monthly Usage Estimate</h3>
+      <div class="pcw-input-grid">
+        <div class="pcw-input-group">
+          <label for="pcw-input-tokens">Input Tokens</label>
+          <div class="pcw-input-wrapper">
+            <input type="number" id="pcw-input-tokens" value="1" min="0" step="0.1" placeholder="1.0" aria-label="Input tokens in millions" />
+            <span class="pcw-input-suffix">million</span>
+          </div>
+        </div>
+        <div class="pcw-input-group">
+          <label for="pcw-output-tokens">Output Tokens</label>
+          <div class="pcw-input-wrapper">
+            <input type="number" id="pcw-output-tokens" value="0.5" min="0" step="0.1" placeholder="0.5" aria-label="Output tokens in millions" />
+            <span class="pcw-input-suffix">million</span>
+          </div>
+        </div>
+      </div>
+      <!-- Usage Presets -->
+      <div class="pcw-presets">
+        <button type="button" class="pcw-preset-btn" data-input="0.1" data-output="0.05">Light (100K)</button>
+        <button type="button" class="pcw-preset-btn active" data-input="1" data-output="0.5">Medium (1M)</button>
+        <button type="button" class="pcw-preset-btn" data-input="10" data-output="5">Heavy (10M)</button>
+        <button type="button" class="pcw-preset-btn" data-input="100" data-output="50">Enterprise (100M)</button>
+      </div>
+    </div>
+
+    <!-- Calculate Button -->
+    <button class="pcw-calculate-btn" id="pcw-calculate-btn">Calculate Costs</button>
+
+    <!-- Error Message -->
+    <div class="pcw-error" id="pcw-error">
+      <p id="pcw-error-text">An error occurred. Please try again.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="pcw-loading" id="pcw-loading">
+      <div class="pcw-spinner"></div>
+      <p>Calculating costs...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div class="pcw-results-section" id="pcw-results">
+      <div class="pcw-results-header">
+        <h3>Cost Comparison</h3>
+        <div class="pcw-results-meta">
+          <span class="pcw-usage-summary" id="pcw-usage-summary"></span>
+        </div>
+      </div>
+
+      <!-- Cheapest Callout -->
+      <div class="pcw-cheapest-callout" id="pcw-cheapest-callout">
+        <p>Cheapest: <strong id="pcw-cheapest-name">—</strong> at <strong id="pcw-cheapest-cost">$0</strong>/month</p>
+      </div>
+
+      <!-- Filter and Search -->
+      <div class="pcw-filter-section">
+        <div class="pcw-filter-chips" id="pcw-filter-chips">
+          <!-- Filter chips populated by JavaScript -->
+        </div>
+        <div class="pcw-search-wrapper">
+          <input type="text" class="pcw-search-input" id="pcw-search" placeholder="Search models..." aria-label="Search models" />
+        </div>
+      </div>
+
+      <!-- Results Table (desktop) -->
+      <table class="pcw-results-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Context</th>
+            <th>vs GPT-4o</th>
+            <th>Verify</th>
+            <th>Monthly Cost</th>
+          </tr>
+        </thead>
+        <tbody id="pcw-results-body">
+          <!-- Results populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- Results Cards (mobile) -->
+      <div class="pcw-results-cards" id="pcw-results-cards">
+        <!-- Cards populated by JavaScript -->
+      </div>
+
+      <!-- No results message -->
+      <div class="pcw-no-results" id="pcw-no-results" style="display: none;">
+        <p>No models match your search.</p>
+      </div>
+
+      <!-- Share URL -->
+      <div class="pcw-share-section">
+        <label>Share this calculation:</label>
+        <input type="text" class="pcw-share-input" id="pcw-share-url" readonly />
+        <button class="pcw-copy-btn" id="pcw-copy-btn">Copy</button>
+      </div>
+
+      <!-- Email Capture -->
+      <div class="pcw-email-section" id="pcw-email-section">
+        <h4>Get Price Alerts</h4>
+        <p>Get notified when AI API prices change</p>
+        <div class="pcw-email-form" id="pcw-email-form">
+          <input type="email" class="pcw-email-input" id="pcw-email-input" placeholder="your@email.com" aria-label="Email address" />
+          <button class="pcw-email-btn" id="pcw-email-btn">Subscribe</button>
+        </div>
+        <div class="pcw-email-error" id="pcw-email-error"></div>
+        <div class="pcw-email-success" id="pcw-email-success">
+          You're subscribed! We'll notify you when prices change.
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="pcw-footer">
+        <p>
+          <strong>Last updated:</strong> <span id="pcw-last-updated">—</span>
+          <br />
+          <a href="https://ai-buzz.com" target="_blank" rel="noopener">AI-Buzz.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  // Configuration
+  const API_BASE = "https://ai-buzz-api-pricing-calculator-wp-widget.onrender.com";
+  const CALCULATE_ENDPOINT = `${API_BASE}/pricing/calculate`;
+
+  // Provider pricing page URLs
+  const PROVIDER_URLS = {
+    openai: "https://openai.com/api/pricing/",
+    anthropic: "https://www.anthropic.com/pricing",
+    google: "https://ai.google.dev/pricing",
+    mistral: "https://mistral.ai/technology/",
+    deepseek: "https://platform.deepseek.com/api-docs/pricing",
+    xai: "https://docs.x.ai/docs/consumption-and-rate-limits",
+    meta: "https://llama.meta.com/",
+    cohere: "https://cohere.com/pricing",
+    groq: "https://groq.com/pricing/",
+    together: "https://www.together.ai/pricing"
+  };
+
+  // DOM Elements
+  const inputTokensEl = document.getElementById("pcw-input-tokens");
+  const outputTokensEl = document.getElementById("pcw-output-tokens");
+  const calculateBtn = document.getElementById("pcw-calculate-btn");
+  const loadingEl = document.getElementById("pcw-loading");
+  const errorEl = document.getElementById("pcw-error");
+  const errorTextEl = document.getElementById("pcw-error-text");
+  const resultsEl = document.getElementById("pcw-results");
+  const resultsBodyEl = document.getElementById("pcw-results-body");
+  const resultsCardsEl = document.getElementById("pcw-results-cards");
+  const usageSummaryEl = document.getElementById("pcw-usage-summary");
+  const lastUpdatedEl = document.getElementById("pcw-last-updated");
+  const cheapestNameEl = document.getElementById("pcw-cheapest-name");
+  const cheapestCostEl = document.getElementById("pcw-cheapest-cost");
+  const searchEl = document.getElementById("pcw-search");
+  const noResultsEl = document.getElementById("pcw-no-results");
+  const shareUrlEl = document.getElementById("pcw-share-url");
+  const copyBtnEl = document.getElementById("pcw-copy-btn");
+  const emailInputEl = document.getElementById("pcw-email-input");
+  const emailBtnEl = document.getElementById("pcw-email-btn");
+  const emailFormEl = document.getElementById("pcw-email-form");
+  const emailSuccessEl = document.getElementById("pcw-email-success");
+  const emailErrorEl = document.getElementById("pcw-email-error");
+  const filterChipsEl = document.getElementById("pcw-filter-chips");
+
+  // State
+  let allResults = [];
+  let activeFilter = "all";
+
+  // Initialize
+  init();
+
+  function init() {
+    // Event listeners
+    calculateBtn.addEventListener("click", handleCalculate);
+    inputTokensEl.addEventListener("keypress", handleEnterKey);
+    outputTokensEl.addEventListener("keypress", handleEnterKey);
+    searchEl.addEventListener("input", handleSearch);
+    copyBtnEl.addEventListener("click", handleCopy);
+    emailBtnEl.addEventListener("click", handleEmailSubscribe);
+    emailInputEl.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") handleEmailSubscribe();
+    });
+
+    // Preset buttons
+    document.querySelectorAll(".pcw-preset-btn").forEach(btn => {
+      btn.addEventListener("click", handlePresetClick);
+    });
+
+    // Check for URL parameters to pre-populate
+    parseUrlParams();
+  }
+
+  function parseUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const inputParam = params.get("input");
+    const outputParam = params.get("output");
+    
+    if (inputParam !== null || outputParam !== null) {
+      // Set input values from URL params (in millions)
+      if (inputParam !== null) {
+        inputTokensEl.value = parseFloat(inputParam) || 1;
+      }
+      if (outputParam !== null) {
+        outputTokensEl.value = parseFloat(outputParam) || 0.5;
+      }
+      
+      // Clear preset active state since we're using custom values
+      document.querySelectorAll(".pcw-preset-btn").forEach(b => b.classList.remove("active"));
+      
+      // Auto-calculate with URL params
+      handleCalculate();
+    }
+  }
+
+  function handlePresetClick(e) {
+    const btn = e.target;
+    inputTokensEl.value = btn.dataset.input;
+    outputTokensEl.value = btn.dataset.output;
+
+    // Update active state
+    document.querySelectorAll(".pcw-preset-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    // Auto-calculate
+    handleCalculate();
+  }
+
+  function handleEnterKey(e) {
+    if (e.key === "Enter") {
+      handleCalculate();
+    }
+  }
+
+  async function handleCalculate() {
+    const inputTokens = parseFloat(inputTokensEl.value) || 0;
+    const outputTokens = parseFloat(outputTokensEl.value) || 0;
+
+    // Convert millions to actual tokens
+    const inputTokensActual = Math.round(inputTokens * 1_000_000);
+    const outputTokensActual = Math.round(outputTokens * 1_000_000);
+
+    if (inputTokensActual === 0 && outputTokensActual === 0) {
+      showError("Please enter at least some token usage.");
+      return;
+    }
+
+    // Show loading state
+    showLoading();
+    hideError();
+    hideResults();
+
+    try {
+      const response = await fetch(CALCULATE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input_tokens_monthly: inputTokensActual,
+          output_tokens_monthly: outputTokensActual
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to calculate costs");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        allResults = data.results;
+        displayResults(data);
+        updateShareUrl(inputTokensActual, outputTokensActual);
+        hideLoading();
+        showResults();
+      } else {
+        throw new Error("Calculation failed");
+      }
+    } catch (error) {
+      console.error("Calculation error:", error);
+      hideLoading();
+      showError(error.message || "An error occurred. Please try again.");
+    }
+  }
+
+  function displayResults(data) {
+    // Update usage summary
+    const inputM = (data.usage.input_tokens / 1_000_000).toFixed(1);
+    const outputM = (data.usage.output_tokens / 1_000_000).toFixed(1);
+    usageSummaryEl.textContent = `${inputM}M in / ${outputM}M out`;
+
+    // Update last updated date
+    lastUpdatedEl.textContent = formatDate(data.pricing_last_updated);
+
+    // Update cheapest callout
+    if (data.cheapest) {
+      cheapestNameEl.textContent = data.cheapest.model_name;
+      cheapestCostEl.textContent = formatCurrency(data.cheapest.monthly_cost);
+    }
+
+    // Clear search and reset filter
+    searchEl.value = "";
+    activeFilter = "all";
+
+    // Build and render filter chips
+    renderFilterChips(allResults);
+
+    // Render results
+    renderResults(allResults);
+  }
+
+  function renderFilterChips(results) {
+    // Extract unique providers
+    const providers = new Map();
+    results.forEach(r => {
+      if (!providers.has(r.provider)) {
+        providers.set(r.provider, r.provider_name);
+      }
+    });
+
+    // Build filter chips HTML
+    let chipsHtml = `<button class="pcw-filter-chip active" data-provider="all">All</button>`;
+    providers.forEach((name, id) => {
+      chipsHtml += `<button class="pcw-filter-chip" data-provider="${id}">${escapeHtml(name)}</button>`;
+    });
+
+    filterChipsEl.innerHTML = chipsHtml;
+
+    // Add event listeners to filter chips
+    filterChipsEl.querySelectorAll(".pcw-filter-chip").forEach(chip => {
+      chip.addEventListener("click", handleFilterClick);
+    });
+  }
+
+  function handleFilterClick(e) {
+    const provider = e.target.dataset.provider;
+    activeFilter = provider;
+
+    // Update active state
+    filterChipsEl.querySelectorAll(".pcw-filter-chip").forEach(c => c.classList.remove("active"));
+    e.target.classList.add("active");
+
+    // Apply filter and search
+    applyFilters();
+  }
+
+  function renderResults(results) {
+    // Render table (desktop)
+    resultsBodyEl.innerHTML = "";
+    // Render cards (mobile)
+    resultsCardsEl.innerHTML = "";
+
+    if (results.length === 0) {
+      noResultsEl.style.display = "block";
+      return;
+    }
+
+    noResultsEl.style.display = "none";
+
+    results.forEach((result, index) => {
+      const isCheapest = index === 0;
+      const rankEmoji = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+      const costFormatted = formatCurrency(result.monthly_cost);
+      const contextFormatted = formatContextWindow(result.context_window);
+      const verifyUrl = PROVIDER_URLS[result.provider] || "#";
+      
+      // Cost breakdown for tooltip
+      const inputCostFmt = formatCurrency(result.input_cost);
+      const outputCostFmt = formatCurrency(result.output_cost);
+      const costBreakdown = `Input: ${inputCostFmt} | Output: ${outputCostFmt}`;
+      
+      // Savings vs GPT-4o
+      let savingsHtml = "—";
+      if (result.vs_gpt4o_savings_percent !== null && result.vs_gpt4o_savings_percent !== undefined) {
+        const savings = result.vs_gpt4o_savings_percent;
+        if (savings > 0) {
+          savingsHtml = `<span class="pcw-savings-badge">${savings.toFixed(0)}% cheaper</span>`;
+        } else if (savings < 0) {
+          savingsHtml = `<span class="pcw-savings-badge more-expensive">${Math.abs(savings).toFixed(0)}% more</span>`;
+        } else {
+          savingsHtml = "Same";
+        }
+      }
+
+      // Table row
+      const row = document.createElement("tr");
+      if (isCheapest) row.classList.add("pcw-cheapest-row");
+      row.innerHTML = `
+        <td>
+          <div class="pcw-model-cell">
+            <span class="pcw-rank">${rankEmoji}</span>
+            <div class="pcw-model-info">
+              <span class="pcw-model-name">${escapeHtml(result.model_name)}</span>
+              <span class="pcw-provider-name">${escapeHtml(result.provider_name)}</span>
+            </div>
+          </div>
+        </td>
+        <td class="pcw-context-cell">${contextFormatted}</td>
+        <td class="pcw-savings-cell">${savingsHtml}</td>
+        <td><a href="${verifyUrl}" target="_blank" rel="noopener" class="pcw-verify-link" title="Verify on ${escapeHtml(result.provider_name)}">↗</a></td>
+        <td class="pcw-cost-cell" title="${costBreakdown}">${costFormatted}</td>
+      `;
+      resultsBodyEl.appendChild(row);
+
+      // Mobile card
+      const card = document.createElement("div");
+      card.className = `pcw-result-card${isCheapest ? " cheapest" : ""}`;
+      card.innerHTML = `
+        <div class="pcw-card-header">
+          <div>
+            <span class="pcw-card-rank">${rankEmoji}</span>
+            <span class="pcw-card-model">${escapeHtml(result.model_name)}</span>
+            <div class="pcw-card-provider">${escapeHtml(result.provider_name)}</div>
+          </div>
+          <div class="pcw-card-cost" title="${costBreakdown}">${costFormatted}</div>
+        </div>
+        <div class="pcw-card-meta">
+          <span>Context: ${contextFormatted}</span>
+          ${savingsHtml !== "—" ? `<span>${savingsHtml}</span>` : ""}
+          <a href="${verifyUrl}" target="_blank" rel="noopener" class="pcw-verify-link">Verify price ↗</a>
+        </div>
+      `;
+      resultsCardsEl.appendChild(card);
+    });
+  }
+
+  function handleSearch() {
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const query = searchEl.value.toLowerCase().trim();
+    
+    let filtered = allResults;
+    
+    // Apply provider filter
+    if (activeFilter !== "all") {
+      filtered = filtered.filter(r => r.provider === activeFilter);
+    }
+    
+    // Apply search filter
+    if (query) {
+      filtered = filtered.filter(r => 
+        r.model_name.toLowerCase().includes(query) ||
+        r.provider_name.toLowerCase().includes(query) ||
+        r.provider.toLowerCase().includes(query) ||
+        r.model.toLowerCase().includes(query)
+      );
+    }
+
+    renderResults(filtered);
+  }
+
+  function updateShareUrl(inputTokens, outputTokens) {
+    // Convert tokens to millions for cleaner URLs
+    const inputM = inputTokens / 1_000_000;
+    const outputM = outputTokens / 1_000_000;
+    const url = `https://www.ai-buzz.com/ai-pricing-calculator?input=${inputM}&output=${outputM}`;
+    shareUrlEl.value = url;
+  }
+
+  function handleCopy() {
+    shareUrlEl.select();
+    navigator.clipboard.writeText(shareUrlEl.value).then(() => {
+      copyBtnEl.textContent = "Copied!";
+      setTimeout(() => { copyBtnEl.textContent = "Copy"; }, 2000);
+    }).catch(() => {
+      document.execCommand("copy");
+      copyBtnEl.textContent = "Copied!";
+      setTimeout(() => { copyBtnEl.textContent = "Copy"; }, 2000);
+    });
+  }
+
+  async function handleEmailSubscribe() {
+    const email = emailInputEl.value.trim();
+    
+    // Basic validation
+    if (!email) {
+      showEmailError("Please enter your email address.");
+      return;
+    }
+    
+    if (!email.includes("@") || !email.includes(".")) {
+      showEmailError("Please enter a valid email address.");
+      return;
+    }
+    
+    // Disable button during request
+    emailBtnEl.disabled = true;
+    emailBtnEl.textContent = "Subscribing...";
+    hideEmailError();
+    
+    try {
+      const response = await fetch(`${API_BASE}/pricing/alerts/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Show success state
+        emailFormEl.style.display = "none";
+        emailSuccessEl.classList.add("visible");
+      } else {
+        showEmailError(data.detail || "Subscription failed. Please try again.");
+        emailBtnEl.disabled = false;
+        emailBtnEl.textContent = "Subscribe";
+      }
+    } catch (error) {
+      console.error("Email subscription error:", error);
+      showEmailError("An error occurred. Please try again.");
+      emailBtnEl.disabled = false;
+      emailBtnEl.textContent = "Subscribe";
+    }
+  }
+
+  function showEmailError(message) {
+    emailErrorEl.textContent = message;
+    emailErrorEl.classList.add("visible");
+  }
+
+  function hideEmailError() {
+    emailErrorEl.classList.remove("visible");
+  }
+
+  // Helper functions
+  function showLoading() {
+    loadingEl.classList.add("visible");
+    calculateBtn.disabled = true;
+    calculateBtn.textContent = "Calculating...";
+  }
+
+  function hideLoading() {
+    loadingEl.classList.remove("visible");
+    calculateBtn.disabled = false;
+    calculateBtn.textContent = "Calculate Costs";
+  }
+
+  function showError(message) {
+    errorTextEl.textContent = message;
+    errorEl.classList.add("visible");
+  }
+
+  function hideError() {
+    errorEl.classList.remove("visible");
+  }
+
+  function showResults() {
+    resultsEl.classList.add("visible");
+  }
+
+  function hideResults() {
+    resultsEl.classList.remove("visible");
+  }
+
+  function formatCurrency(amount) {
+    if (amount >= 1000) {
+      return "$" + amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else if (amount >= 0.01) {
+      return "$" + amount.toFixed(2);
+    } else {
+      return "$" + amount.toFixed(4);
+    }
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr || dateStr === "unknown") return "Unknown";
+    try {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+        return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
+  }
+
+  function formatContextWindow(tokens) {
+    if (!tokens) return "—";
+    if (tokens >= 1000000) {
+      return (tokens / 1000000).toFixed(0) + "M";
+    } else if (tokens >= 1000) {
+      return (tokens / 1000).toFixed(0) + "K";
+    }
+    return tokens.toString();
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+})();
+</script>
+</div>

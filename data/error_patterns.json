@@ -1,0 +1,313 @@
+{
+  "_metadata": {
+    "last_updated": "2026-01-29",
+    "update_frequency": "monthly",
+    "notes": "Common error patterns for AI API providers. Patterns are matched using case-insensitive substring matching.",
+    "sources": {
+      "openai": "https://platform.openai.com/docs/guides/error-codes",
+      "anthropic": "https://docs.anthropic.com/claude/reference/errors",
+      "google": "https://ai.google.dev/gemini-api/docs/errors",
+      "mistral": "https://docs.mistral.ai/api/#errors"
+    }
+  },
+  "patterns": [
+    {
+      "id": "openai_rate_limit",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "rate limit",
+        "rate_limit_exceeded",
+        "429",
+        "too many requests"
+      ],
+      "title": "Rate Limit Exceeded",
+      "explanation": "You've exceeded OpenAI's rate limit for your API tier. Rate limits vary by tier and model.",
+      "fix": "1. Wait a few seconds and retry\n2. Implement exponential backoff in your code\n3. Upgrade your API tier for higher limits\n4. Use request queuing to manage concurrent requests",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://platform.openai.com/docs/guides/rate-limits"
+    },
+    {
+      "id": "openai_auth",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "invalid api key",
+        "authentication",
+        "401",
+        "unauthorized",
+        "invalid_api_key"
+      ],
+      "title": "Invalid API Key",
+      "explanation": "Your API key is missing, invalid, or has been revoked.",
+      "fix": "1. Check that your API key is correctly set in your code\n2. Verify the key starts with 'sk-'\n3. Check your OpenAI dashboard to ensure the key is active\n4. Generate a new API key if needed",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://platform.openai.com/docs/api-reference/authentication"
+    },
+    {
+      "id": "openai_quota",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "quota",
+        "insufficient_quota",
+        "billing",
+        "payment",
+        "402"
+      ],
+      "title": "Insufficient Quota",
+      "explanation": "You've exceeded your usage quota or haven't set up billing.",
+      "fix": "1. Add a payment method in your OpenAI dashboard\n2. Check your usage limits and upgrade if needed\n3. Wait for your quota to reset (usually monthly)\n4. Contact OpenAI support for quota increases",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://platform.openai.com/account/billing"
+    },
+    {
+      "id": "openai_context_length",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "context_length_exceeded",
+        "maximum context length",
+        "token limit",
+        "too many tokens"
+      ],
+      "title": "Context Length Exceeded",
+      "explanation": "Your prompt plus response exceeds the model's maximum context window.",
+      "fix": "1. Reduce the length of your input prompt\n2. Use a model with a larger context window (e.g., GPT-4o supports 128K tokens)\n3. Summarize or truncate previous conversation history\n4. Use streaming to process long outputs incrementally",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://platform.openai.com/docs/guides/rate-limits"
+    },
+    {
+      "id": "openai_invalid_request",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "invalid_request",
+        "400",
+        "bad request",
+        "invalid parameter"
+      ],
+      "title": "Invalid Request",
+      "explanation": "Your request contains invalid parameters or is malformed.",
+      "fix": "1. Check your request parameters match the API specification\n2. Verify JSON formatting is correct\n3. Ensure required fields are present\n4. Check parameter value ranges (e.g., temperature 0-2)",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://platform.openai.com/docs/api-reference"
+    },
+    {
+      "id": "anthropic_rate_limit",
+      "provider": "Anthropic",
+      "provider_id": "anthropic",
+      "error_keywords": [
+        "rate limit",
+        "rate_limit_error",
+        "429",
+        "too many requests"
+      ],
+      "title": "Rate Limit Exceeded",
+      "explanation": "You've exceeded Anthropic's rate limit for your account tier.",
+      "fix": "1. Wait and retry with exponential backoff\n2. Check your rate limits in the Anthropic dashboard\n3. Upgrade your tier for higher limits\n4. Reduce request frequency or batch requests",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://docs.anthropic.com/claude/reference/rate-limits"
+    },
+    {
+      "id": "anthropic_auth",
+      "provider": "Anthropic",
+      "provider_id": "anthropic",
+      "error_keywords": [
+        "authentication",
+        "401",
+        "invalid api key",
+        "x-api-key",
+        "unauthorized"
+      ],
+      "title": "Authentication Failed",
+      "explanation": "Your API key is missing or invalid.",
+      "fix": "1. Verify your API key is set in the 'x-api-key' header\n2. Check that your key starts with 'sk-ant-'\n3. Ensure the key is active in your Anthropic account\n4. Generate a new key if needed",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.anthropic.com/claude/reference/authentication"
+    },
+    {
+      "id": "anthropic_content_policy",
+      "provider": "Anthropic",
+      "provider_id": "anthropic",
+      "error_keywords": [
+        "content_policy_violation",
+        "content policy",
+        "safety",
+        "blocked"
+      ],
+      "title": "Content Policy Violation",
+      "explanation": "Your request triggered Anthropic's content safety filters.",
+      "fix": "1. Review and modify your prompt to avoid harmful content\n2. Remove any requests for illegal, harmful, or unethical activities\n3. Use more neutral language\n4. Check Anthropic's usage policies",
+      "severity": "error",
+      "common": false,
+      "docs_url": "https://www.anthropic.com/usage-policy"
+    },
+    {
+      "id": "anthropic_overloaded",
+      "provider": "Anthropic",
+      "provider_id": "anthropic",
+      "error_keywords": [
+        "overloaded_error",
+        "overloaded",
+        "503",
+        "service unavailable"
+      ],
+      "title": "Service Overloaded",
+      "explanation": "Anthropic's API is temporarily overloaded and cannot process your request.",
+      "fix": "1. Wait a few minutes and retry\n2. Implement retry logic with exponential backoff\n3. Check Anthropic's status page for outages\n4. Reduce request frequency",
+      "severity": "warning",
+      "common": false,
+      "docs_url": "https://status.anthropic.com"
+    },
+    {
+      "id": "google_quota_exceeded",
+      "provider": "Google",
+      "provider_id": "google",
+      "error_keywords": [
+        "quota exceeded",
+        "429",
+        "resource_exhausted",
+        "quota"
+      ],
+      "title": "Quota Exceeded",
+      "explanation": "You've exceeded your Google AI API quota for the current period.",
+      "fix": "1. Check your quota limits in Google Cloud Console\n2. Wait for quota reset (usually daily or monthly)\n3. Request a quota increase\n4. Upgrade your billing plan",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://ai.google.dev/gemini-api/docs/quota"
+    },
+    {
+      "id": "google_invalid_api_key",
+      "provider": "Google",
+      "provider_id": "google",
+      "error_keywords": [
+        "invalid api key",
+        "api key not valid",
+        "401",
+        "unauthorized"
+      ],
+      "title": "Invalid API Key",
+      "explanation": "Your Google AI API key is missing or invalid.",
+      "fix": "1. Verify your API key is correctly set\n2. Check that API is enabled in Google Cloud Console\n3. Ensure the key has proper permissions\n4. Generate a new API key if needed",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://ai.google.dev/gemini-api/docs/api-key"
+    },
+    {
+      "id": "google_safety_filter",
+      "provider": "Google",
+      "provider_id": "google",
+      "error_keywords": [
+        "safety",
+        "blocked",
+        "safety_rating",
+        "content_filter"
+      ],
+      "title": "Content Blocked by Safety Filter",
+      "explanation": "Your request was blocked by Google's safety filters.",
+      "fix": "1. Modify your prompt to avoid harmful content\n2. Adjust safety settings in your request\n3. Use more neutral language\n4. Review Google's safety guidelines",
+      "severity": "warning",
+      "common": false,
+      "docs_url": "https://ai.google.dev/gemini-api/docs/safety-settings"
+    },
+    {
+      "id": "network_timeout",
+      "provider": "Common",
+      "provider_id": "common",
+      "error_keywords": [
+        "timeout",
+        "timed out",
+        "connection timeout",
+        "request timeout"
+      ],
+      "title": "Request Timeout",
+      "explanation": "The API request took too long and timed out.",
+      "fix": "1. Increase your timeout setting\n2. Reduce the size of your request\n3. Check your network connection\n4. Retry the request (may be temporary)",
+      "severity": "warning",
+      "common": true,
+      "docs_url": null
+    },
+    {
+      "id": "network_connection",
+      "provider": "Common",
+      "provider_id": "common",
+      "error_keywords": [
+        "connection",
+        "network",
+        "dns",
+        "resolve",
+        "connection refused",
+        "connection error"
+      ],
+      "title": "Network Connection Error",
+      "explanation": "Unable to connect to the API server. This could be a network issue or the service is down.",
+      "fix": "1. Check your internet connection\n2. Verify the API endpoint URL is correct\n3. Check if the service is down (status page)\n4. Retry after a few moments",
+      "severity": "error",
+      "common": true,
+      "docs_url": null
+    },
+    {
+      "id": "server_error",
+      "provider": "Common",
+      "provider_id": "common",
+      "error_keywords": [
+        "500",
+        "502",
+        "503",
+        "504",
+        "internal server error",
+        "bad gateway",
+        "service unavailable"
+      ],
+      "title": "Server Error",
+      "explanation": "The API server encountered an error processing your request.",
+      "fix": "1. Wait a few moments and retry\n2. Check the provider's status page\n3. Implement retry logic with exponential backoff\n4. Contact support if the issue persists",
+      "severity": "error",
+      "common": false,
+      "docs_url": null
+    },
+    {
+      "id": "json_parse_error",
+      "provider": "Common",
+      "provider_id": "common",
+      "error_keywords": [
+        "json",
+        "parse",
+        "invalid json",
+        "malformed",
+        "syntax error"
+      ],
+      "title": "JSON Parse Error",
+      "explanation": "The request or response contains invalid JSON.",
+      "fix": "1. Validate your JSON before sending\n2. Check for unescaped quotes or special characters\n3. Ensure proper encoding (UTF-8)\n4. Use a JSON validator tool",
+      "severity": "error",
+      "common": false,
+      "docs_url": null
+    },
+    {
+      "id": "model_not_found",
+      "provider": "Common",
+      "provider_id": "common",
+      "error_keywords": [
+        "model not found",
+        "invalid model",
+        "model does not exist",
+        "unknown model"
+      ],
+      "title": "Model Not Found",
+      "explanation": "The specified model name doesn't exist or isn't available.",
+      "fix": "1. Check the model name spelling\n2. Verify the model is available in your region\n3. Check the provider's model list\n4. Ensure you're using the correct API version",
+      "severity": "error",
+      "common": false,
+      "docs_url": null
+    }
+  ]
+}

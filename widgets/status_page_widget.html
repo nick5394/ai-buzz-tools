@@ -1,0 +1,922 @@
+<!-- AI Status Page Widget -->
+<div id="status-page-widget">
+  <style>
+    /* CSS Variables for easy theming */
+    #status-page-widget {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --error-color: #ef4444;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --bg-tertiary: #f3f4f6;
+      --border-color: #e5e7eb;
+      --border-radius: 12px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    #status-page-widget * {
+      box-sizing: border-box;
+    }
+
+    #status-page-widget {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0;
+      font-family: var(--font-family);
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .spw-header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: white;
+      padding: 24px 28px;
+      text-align: center;
+    }
+
+    .spw-header h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .spw-header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+
+    /* Overall Status Banner */
+    .spw-overall-status {
+      padding: 16px 28px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .spw-overall-status.operational {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+      color: var(--success-color);
+      border-bottom: 2px solid var(--success-color);
+    }
+
+    .spw-overall-status.issues {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+      color: var(--warning-color);
+      border-bottom: 2px solid var(--warning-color);
+    }
+
+    .spw-overall-status.outage {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+      color: var(--error-color);
+      border-bottom: 2px solid var(--error-color);
+    }
+
+    .spw-status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: spw-pulse 2s infinite;
+    }
+
+    .spw-overall-status.operational .spw-status-dot {
+      background: var(--success-color);
+    }
+
+    .spw-overall-status.issues .spw-status-dot {
+      background: var(--warning-color);
+    }
+
+    .spw-overall-status.outage .spw-status-dot {
+      background: var(--error-color);
+    }
+
+    @keyframes spw-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Main content */
+    .spw-content {
+      padding: 28px;
+    }
+
+    /* Provider list */
+    .spw-provider-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .spw-provider-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+
+    .spw-provider-card:hover {
+      border-color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .spw-provider-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .spw-provider-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .spw-provider-indicator.operational {
+      background: var(--success-color);
+    }
+
+    .spw-provider-indicator.degraded {
+      background: var(--warning-color);
+    }
+
+    .spw-provider-indicator.down {
+      background: var(--error-color);
+    }
+
+    .spw-provider-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spw-provider-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .spw-provider-status {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .spw-provider-status.operational {
+      color: var(--success-color);
+    }
+
+    .spw-provider-status.degraded {
+      color: var(--warning-color);
+    }
+
+    .spw-provider-status.down {
+      color: var(--error-color);
+    }
+
+    .spw-provider-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .spw-latency {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .spw-status-link {
+      font-size: 12px;
+      color: var(--primary-color);
+      text-decoration: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(37, 99, 235, 0.1);
+      transition: all 0.2s;
+    }
+
+    .spw-status-link:hover {
+      background: rgba(37, 99, 235, 0.2);
+    }
+
+    /* Summary stats */
+    .spw-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .spw-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .spw-stat-count {
+      font-weight: 600;
+    }
+
+    .spw-stat.operational .spw-stat-count {
+      color: var(--success-color);
+    }
+
+    .spw-stat.degraded .spw-stat-count {
+      color: var(--warning-color);
+    }
+
+    .spw-stat.down .spw-stat-count {
+      color: var(--error-color);
+    }
+
+    /* Refresh button */
+    .spw-refresh-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .spw-last-updated {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .spw-refresh-btn {
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-family);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spw-refresh-btn:hover:not(:disabled) {
+      background: var(--bg-secondary);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .spw-refresh-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .spw-refresh-icon {
+      transition: transform 0.3s;
+    }
+
+    .spw-refresh-btn.loading .spw-refresh-icon {
+      animation: spw-spin 1s linear infinite;
+    }
+
+    @keyframes spw-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Auto-refresh indicator */
+    .spw-auto-refresh {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spw-auto-refresh-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success-color);
+      border-radius: 50%;
+      animation: spw-pulse 2s infinite;
+    }
+
+    /* Email capture section */
+    .spw-email-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.05) 0%, rgba(51, 65, 85, 0.05) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+    }
+
+    .spw-email-section h4 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .spw-email-section p {
+      margin: 0 0 14px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .spw-email-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .spw-email-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font-family);
+    }
+
+    .spw-email-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .spw-email-btn {
+      padding: 10px 20px;
+      background: #1e293b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+      transition: background 0.2s;
+    }
+
+    .spw-email-btn:hover:not(:disabled) {
+      background: #334155;
+    }
+
+    .spw-email-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .spw-email-success {
+      display: none;
+      padding: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success-color);
+      border-radius: 6px;
+      color: var(--success-color);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .spw-email-success.visible {
+      display: block;
+    }
+
+    .spw-email-error {
+      display: none;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--error-color);
+    }
+
+    .spw-email-error.visible {
+      display: block;
+    }
+
+    /* Share section */
+    .spw-share-section {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .spw-share-section label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .spw-share-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      background: var(--bg-primary);
+    }
+
+    .spw-copy-btn {
+      padding: 8px 16px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+    }
+
+    .spw-copy-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Footer */
+    .spw-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .spw-footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .spw-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading state */
+    .spw-loading {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .spw-loading.visible {
+      display: block;
+    }
+
+    .spw-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spw-spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    /* Error state */
+    .spw-error {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: var(--error-color);
+      margin: 20px;
+    }
+
+    .spw-error.visible {
+      display: block;
+    }
+
+    .spw-error-retry {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: var(--error-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--font-family);
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      .spw-provider-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .spw-provider-meta {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .spw-stats {
+        flex-direction: column;
+      }
+
+      .spw-stat {
+        justify-content: center;
+      }
+    }
+  </style>
+
+  <!-- Header -->
+  <div class="spw-header">
+    <h2>AI API Status</h2>
+    <p>Real-time availability monitoring for major AI providers</p>
+  </div>
+
+  <!-- Overall Status Banner -->
+  <div class="spw-overall-status operational" id="spw-overall-status">
+    <span class="spw-status-dot"></span>
+    <span id="spw-overall-text">Checking status...</span>
+  </div>
+
+  <!-- Loading State -->
+  <div class="spw-loading visible" id="spw-loading">
+    <div class="spw-spinner"></div>
+    <p>Checking API endpoints...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="spw-error" id="spw-error">
+    <p id="spw-error-text">Unable to fetch status data.</p>
+    <button class="spw-error-retry" id="spw-error-retry">Try Again</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="spw-content" id="spw-content" style="display: none;">
+    <!-- Refresh Section -->
+    <div class="spw-refresh-section">
+      <div>
+        <span class="spw-last-updated">Last updated: <span id="spw-last-updated">—</span></span>
+        <div class="spw-auto-refresh">
+          <span class="spw-auto-refresh-dot"></span>
+          <span>Auto-refreshes every 60s</span>
+        </div>
+      </div>
+      <button class="spw-refresh-btn" id="spw-refresh-btn">
+        <span class="spw-refresh-icon">↻</span>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="spw-stats" id="spw-stats">
+      <div class="spw-stat operational">
+        <span class="spw-stat-count" id="spw-stat-operational">0</span>
+        <span>Operational</span>
+      </div>
+      <div class="spw-stat degraded">
+        <span class="spw-stat-count" id="spw-stat-degraded">0</span>
+        <span>Degraded</span>
+      </div>
+      <div class="spw-stat down">
+        <span class="spw-stat-count" id="spw-stat-down">0</span>
+        <span>Down</span>
+      </div>
+    </div>
+
+    <!-- Provider List -->
+    <div class="spw-provider-list" id="spw-provider-list">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <!-- Share URL -->
+    <div class="spw-share-section">
+      <label>Share this page:</label>
+      <input type="text" class="spw-share-input" id="spw-share-url" value="https://www.ai-buzz.com/ai-status" readonly />
+      <button class="spw-copy-btn" id="spw-copy-btn">Copy</button>
+    </div>
+
+    <!-- Email Capture -->
+    <div class="spw-email-section" id="spw-email-section">
+      <h4>Get Outage Alerts</h4>
+      <p>Get notified when AI APIs go down</p>
+      <div class="spw-email-form" id="spw-email-form">
+        <input type="email" class="spw-email-input" id="spw-email-input" placeholder="your@email.com" aria-label="Email address" />
+        <button class="spw-email-btn" id="spw-email-btn">Subscribe</button>
+      </div>
+      <div class="spw-email-error" id="spw-email-error"></div>
+      <div class="spw-email-success" id="spw-email-success">
+        You're subscribed! We'll notify you when APIs go down.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="spw-footer">
+      <p>
+        Monitoring <span id="spw-provider-count">10</span> AI providers
+        <br />
+        <a href="https://ai-buzz.com" target="_blank" rel="noopener">AI-Buzz.com</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  // Configuration
+  const API_BASE = "https://ai-buzz-status-page.onrender.com";
+  const STATUS_ENDPOINT = `${API_BASE}/status`;
+  const SUBSCRIBE_ENDPOINT = `${API_BASE}/status/alerts/subscribe`;
+  const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
+
+  // DOM Elements
+  const loadingEl = document.getElementById("spw-loading");
+  const errorEl = document.getElementById("spw-error");
+  const errorTextEl = document.getElementById("spw-error-text");
+  const errorRetryEl = document.getElementById("spw-error-retry");
+  const contentEl = document.getElementById("spw-content");
+  const overallStatusEl = document.getElementById("spw-overall-status");
+  const overallTextEl = document.getElementById("spw-overall-text");
+  const lastUpdatedEl = document.getElementById("spw-last-updated");
+  const refreshBtnEl = document.getElementById("spw-refresh-btn");
+  const statOperationalEl = document.getElementById("spw-stat-operational");
+  const statDegradedEl = document.getElementById("spw-stat-degraded");
+  const statDownEl = document.getElementById("spw-stat-down");
+  const providerListEl = document.getElementById("spw-provider-list");
+  const providerCountEl = document.getElementById("spw-provider-count");
+  const shareUrlEl = document.getElementById("spw-share-url");
+  const copyBtnEl = document.getElementById("spw-copy-btn");
+  const emailInputEl = document.getElementById("spw-email-input");
+  const emailBtnEl = document.getElementById("spw-email-btn");
+  const emailFormEl = document.getElementById("spw-email-form");
+  const emailSuccessEl = document.getElementById("spw-email-success");
+  const emailErrorEl = document.getElementById("spw-email-error");
+
+  // State
+  let autoRefreshTimer = null;
+
+  // Initialize
+  init();
+
+  function init() {
+    // Event listeners
+    refreshBtnEl.addEventListener("click", handleRefresh);
+    errorRetryEl.addEventListener("click", handleRefresh);
+    copyBtnEl.addEventListener("click", handleCopy);
+    emailBtnEl.addEventListener("click", handleEmailSubscribe);
+    emailInputEl.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") handleEmailSubscribe();
+    });
+
+    // Fetch initial status
+    fetchStatus();
+
+    // Set up auto-refresh
+    startAutoRefresh();
+  }
+
+  function startAutoRefresh() {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(fetchStatus, AUTO_REFRESH_INTERVAL);
+  }
+
+  async function fetchStatus() {
+    try {
+      const response = await fetch(STATUS_ENDPOINT);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        displayStatus(data);
+        hideLoading();
+        hideError();
+        showContent();
+      } else {
+        throw new Error("Failed to fetch status");
+      }
+    } catch (error) {
+      console.error("Status fetch error:", error);
+      hideLoading();
+      showError(error.message || "Unable to fetch status data.");
+    }
+  }
+
+  function displayStatus(data) {
+    // Update overall status banner
+    updateOverallStatus(data.overall_status);
+
+    // Update stats
+    statOperationalEl.textContent = data.operational_count;
+    statDegradedEl.textContent = data.degraded_count;
+    statDownEl.textContent = data.down_count;
+
+    // Update last updated time
+    lastUpdatedEl.textContent = formatTime(data.last_updated);
+
+    // Update provider count
+    providerCountEl.textContent = data.providers.length;
+
+    // Render provider list
+    renderProviders(data.providers);
+  }
+
+  function updateOverallStatus(status) {
+    overallStatusEl.classList.remove("operational", "issues", "outage");
+
+    if (status === "all_operational") {
+      overallStatusEl.classList.add("operational");
+      overallTextEl.textContent = "All Systems Operational";
+    } else if (status === "issues_detected") {
+      overallStatusEl.classList.add("issues");
+      overallTextEl.textContent = "Issues Detected";
+    } else if (status === "major_outage") {
+      overallStatusEl.classList.add("outage");
+      overallTextEl.textContent = "Major Outage";
+    }
+  }
+
+  function renderProviders(providers) {
+    providerListEl.innerHTML = "";
+
+    providers.forEach(provider => {
+      const card = document.createElement("div");
+      card.className = "spw-provider-card";
+
+      const statusText = provider.status === "operational" ? "Operational" :
+                         provider.status === "degraded" ? "Degraded" : "Down";
+
+      const latencyText = provider.latency_ms !== null ? `${provider.latency_ms}ms` : "—";
+
+      const errorInfo = provider.error ? ` (${escapeHtml(provider.error)})` : "";
+
+      card.innerHTML = `
+        <div class="spw-provider-info">
+          <span class="spw-provider-indicator ${provider.status}"></span>
+          <div class="spw-provider-details">
+            <span class="spw-provider-name">${escapeHtml(provider.name)}</span>
+            <span class="spw-provider-status ${provider.status}">${statusText}${errorInfo}</span>
+          </div>
+        </div>
+        <div class="spw-provider-meta">
+          <span class="spw-latency">${latencyText}</span>
+          <a href="${escapeHtml(provider.status_page_url)}" target="_blank" rel="noopener" class="spw-status-link">Status Page ↗</a>
+        </div>
+      `;
+
+      providerListEl.appendChild(card);
+    });
+  }
+
+  async function handleRefresh() {
+    refreshBtnEl.disabled = true;
+    refreshBtnEl.classList.add("loading");
+
+    await fetchStatus();
+
+    refreshBtnEl.disabled = false;
+    refreshBtnEl.classList.remove("loading");
+  }
+
+  function handleCopy() {
+    shareUrlEl.select();
+    navigator.clipboard.writeText(shareUrlEl.value).then(() => {
+      copyBtnEl.textContent = "Copied!";
+      setTimeout(() => { copyBtnEl.textContent = "Copy"; }, 2000);
+    }).catch(() => {
+      document.execCommand("copy");
+      copyBtnEl.textContent = "Copied!";
+      setTimeout(() => { copyBtnEl.textContent = "Copy"; }, 2000);
+    });
+  }
+
+  async function handleEmailSubscribe() {
+    const email = emailInputEl.value.trim();
+
+    if (!email) {
+      showEmailError("Please enter your email address.");
+      return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+      showEmailError("Please enter a valid email address.");
+      return;
+    }
+
+    emailBtnEl.disabled = true;
+    emailBtnEl.textContent = "Subscribing...";
+    hideEmailError();
+
+    try {
+      const response = await fetch(SUBSCRIBE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        emailFormEl.style.display = "none";
+        emailSuccessEl.classList.add("visible");
+      } else {
+        showEmailError(data.detail || "Subscription failed. Please try again.");
+        emailBtnEl.disabled = false;
+        emailBtnEl.textContent = "Subscribe";
+      }
+    } catch (error) {
+      console.error("Email subscription error:", error);
+      showEmailError("An error occurred. Please try again.");
+      emailBtnEl.disabled = false;
+      emailBtnEl.textContent = "Subscribe";
+    }
+  }
+
+  function showEmailError(message) {
+    emailErrorEl.textContent = message;
+    emailErrorEl.classList.add("visible");
+  }
+
+  function hideEmailError() {
+    emailErrorEl.classList.remove("visible");
+  }
+
+  // Helper functions
+  function showLoading() {
+    loadingEl.classList.add("visible");
+  }
+
+  function hideLoading() {
+    loadingEl.classList.remove("visible");
+  }
+
+  function showError(message) {
+    errorTextEl.textContent = message;
+    errorEl.classList.add("visible");
+    contentEl.style.display = "none";
+  }
+
+  function hideError() {
+    errorEl.classList.remove("visible");
+  }
+
+  function showContent() {
+    contentEl.style.display = "block";
+  }
+
+  function formatTime(isoString) {
+    if (!isoString) return "Unknown";
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    } catch {
+      return isoString;
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+})();
+</script>
+</div>

@@ -1,0 +1,249 @@
+---
+description: Project context, goals, current status, and how to work with Cursor
+alwaysApply: true
+---
+
+# AI-Buzz Tools — Project Context
+
+## Mission
+
+Build free, genuinely useful tools for AI developers to validate demand, grow an email list, and help people. Not a startup (yet) — a portfolio of small bets to see what resonates.
+
+## Success Metrics
+
+- **Primary:** Someone reaches out saying "thank you" — proof of genuine utility
+- **Secondary:** Email subscriber growth (target: 500 in 3 months)
+- **Tertiary:** Organic search traffic to tools
+
+## Constraints
+
+- **Solo developer** — limited ongoing maintenance bandwidth
+- **$0-20/month budget** — free tiers where possible (Render, Mailchimp)
+- **Tools run themselves** — no manual maintenance required
+- **No user accounts** — tools are free and anonymous
+
+## Anti-Goals
+
+- Don't build anything requiring ongoing manual maintenance
+- Don't over-engineer before validation
+- Don't add features unless they clearly help users make better decisions
+- Don't let process slow down shipping
+
+---
+
+## Environment & Infrastructure
+
+| System        | Purpose         | Details                                                 |
+| ------------- | --------------- | ------------------------------------------------------- |
+| **WordPress** | Frontend        | ai-buzz.com, Bricks Builder, ~350 AI news articles      |
+| **Render**    | Backend hosting | Free tier, auto-deploy from GitHub, 10-30s cold starts  |
+| **Mailchimp** | Email capture   | Single list, segmented by tags (`tool:X`, `interest:Y`) |
+| **GA4**       | Analytics       | gtag.js events from widgets                             |
+
+### Key URLs
+
+- **Site:** ai-buzz.com
+- **API:** Deployed on Render (auto-deploy on push to main)
+- **Share URLs:** Always point to ai-buzz.com (never Render URLs)
+
+---
+
+## Current Status
+
+### Completed
+
+- **Pricing Calculator** — deployed at `/ai-pricing-calculator`, working
+- **Status Page** — deployed, real-time API status with 60s cache
+- **Error Decoder** — deployed, pattern matching with explanations and fixes
+
+### Planned
+
+- **Tools Landing Page** — grid of tool cards, master email signup at `/tools`
+
+### Known Issues / Tech Debt
+
+- Render free tier cold starts (10-30s) — widgets handle this gracefully
+- No CI/CD pipeline yet (manual `pytest` for now)
+
+---
+
+## Tools Roadmap
+
+| Tool               | User Problem                       | Status  |
+| ------------------ | ---------------------------------- | ------- |
+| Pricing Calculator | "How much will this cost?"         | Done    |
+| Status Page        | "Is OpenAI down or is it just me?" | Done    |
+| Error Decoder      | "WTF does this error mean?"        | Done    |
+| Tools Landing Page | "Show me all the tools"            | Planned |
+
+---
+
+## What "Done" Looks Like
+
+For each tool:
+
+1. API endpoints deployed on Render
+2. Widget HTML created (self-contained)
+3. Widget embedded on WordPress page via Bricks
+4. Email capture working with correct Mailchimp tags
+5. GA4 events firing for key actions
+6. Share URL points to ai-buzz.com
+7. Works on mobile (375px)
+8. Handles API cold starts gracefully
+
+---
+
+## Working With Cursor
+
+### Effective Prompt Template
+
+```
+[WHAT] Add/Fix/Build [specific thing]
+
+[PATTERN] Follow the pattern in [reference file]
+
+[SCOPE]
+- Include: [what to build]
+- Skip: [what to leave out]
+
+[CONSTRAINTS]
+- [any specific constraints]
+
+[DONE WHEN]
+- [acceptance criteria]
+```
+
+### Example Prompt
+
+```
+Add the Rate Limits tool.
+
+Follow the pattern in api/error_decoder.py
+
+Scope:
+- Include: OpenAI and Anthropic tier limits, practical interpretations
+- Skip: Other providers for now, full test suite
+
+Constraints:
+- No new dependencies
+- Mobile responsive
+- Handle Render cold starts
+
+Done when:
+- /rate-limits/limits endpoint returns tier data
+- Widget displays limits with practical interpretation
+- Email capture works with tool:rate-limits tag
+```
+
+### When Cursor Should Ask
+
+- Scope is ambiguous or could be interpreted multiple ways
+- Multiple valid approaches exist with meaningful tradeoffs
+- Would require adding new dependencies
+- Would change shared code (`api/shared.py`) affecting multiple tools
+- Feature might be out of scope for current phase
+- Architectural decision needed
+
+### When Cursor Should Proceed
+
+- Clear pattern exists to copy from (use error_decoder as reference)
+- Change is isolated to one tool's files
+- Standard bug fix with obvious solution
+- Following established conventions in the codebase
+- Scope is explicitly defined in the prompt
+- Adding data to existing JSON structure
+
+---
+
+## Recent Decisions
+
+- **error_decoder is the reference implementation** — cleanest code, most complete patterns
+- **Share URLs point to ai-buzz.com** — not Render URLs (for SEO and branding)
+- **Email capture is optional** — works without Mailchimp configured (graceful fallback)
+- **Self-contained widgets** — all HTML/CSS/JS in one file, no build step
+- **No React/Vue** — vanilla HTML/CSS/JS for simplicity and WordPress embedding
+- **60-second cache on status checks** — balance freshness vs API load
+
+---
+
+## WordPress Integration
+
+### Overview
+
+Tool pages are managed via WordPress REST API. Content templates in `content/tools/` are the source of truth. CLI tool handles push/pull operations.
+
+### Commands
+
+```bash
+# List all WordPress pages
+python scripts/wp_pages.py list
+
+# Pull page to local markdown (overwrites local file)
+python scripts/wp_pages.py pull --slug ai-pricing-calculator
+
+# Push local content to WordPress
+python scripts/wp_pages.py push --file content/tools/pricing-calculator.md
+
+# Show diff between local and remote
+python scripts/wp_pages.py diff --slug ai-pricing-calculator
+```
+
+### Content Template Structure
+
+Every tool page has a markdown file in `content/tools/` with:
+
+**Frontmatter (YAML):**
+
+- `title` - Page title
+- `slug` - URL slug (e.g., `ai-pricing-calculator`)
+- `status` - `publish` or `draft`
+- `seo_title` - AIOSEO title (under 60 chars)
+- `seo_description` - Meta description (under 155 chars)
+- `widget_endpoint` - API path for widget (e.g., `/pricing/widget`)
+
+**Body sections:**
+
+1. H1 title (same as frontmatter title)
+2. Intro paragraph (2-3 sentences)
+3. Widget marker comment
+4. "How to Use" section (3 numbered steps)
+5. "FAQ" section (4-5 Q&A pairs)
+6. "Related Tools" section (links to other tools)
+
+### Widget Embedding (Bricks)
+
+In WordPress/Bricks, use a Code element with:
+
+```html
+<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+```
+
+Replace `error-decoder` with the tool name: `pricing`, `status`, or `error-decoder`.
+
+The JS loader fetches widget HTML client-side, bypassing WordPress caching entirely. No more manual cache clearing needed.
+
+### When Building a New Tool
+
+After completing API and widget:
+
+1. Create `content/tools/{tool-slug}.md` using `_template.md` as base
+2. Write intro, FAQ, and SEO meta specific to the tool
+3. Test locally, then push: `python scripts/wp_pages.py push --file content/tools/{tool-slug}.md`
+4. In WordPress: Add script tag directly in page content (HTML block in Block Editor, or paste in Text mode in Classic Editor)
+5. Verify page loads correctly at `ai-buzz.com/{slug}`
+
+### When Cursor Should Help
+
+- **Generate content:** When building a new tool, generate the content template
+- **Optimize SEO:** Review/improve seo_title and seo_description on request
+- **Add FAQ:** Add new FAQ entries based on common user questions
+- **Push changes:** After editing content, remind to run push command
+- **Pull updates:** If WordPress was edited directly, pull to sync local
+
+### SEO Checklist
+
+- [ ] seo_title under 60 characters, includes tool name
+- [ ] seo_description under 155 characters, explains value
+- [ ] Slug follows pattern: `ai-{tool-name}`
+- [ ] FAQ includes "Is this tool free?" question
+- [ ] Related tools links are accurate

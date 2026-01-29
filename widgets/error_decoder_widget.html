@@ -1,0 +1,869 @@
+<!-- AI Error Decoder Widget -->
+<div id="error-decoder-widget">
+  <style>
+    /* CSS Variables for easy theming */
+    #error-decoder-widget {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --warning-color: #f59e0b;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --bg-tertiary: #f3f4f6;
+      --border-color: #e5e7eb;
+      --border-radius: 12px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, sans-serif;
+    }
+
+    #error-decoder-widget * {
+      box-sizing: border-box;
+    }
+
+    #error-decoder-widget {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0;
+      font-family: var(--font-family);
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .edw-header {
+      background: linear-gradient(
+        135deg,
+        var(--primary-color) 0%,
+        #7c3aed 100%
+      );
+      color: white;
+      padding: 24px 28px;
+      text-align: center;
+    }
+
+    .edw-header h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .edw-header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+
+    /* Main content */
+    .edw-content {
+      padding: 28px;
+    }
+
+    /* Input section */
+    .edw-input-section {
+      margin-bottom: 24px;
+    }
+
+    .edw-input-section h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .edw-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: var(--font-family);
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .edw-textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .edw-textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .edw-decode-btn {
+      margin-top: 12px;
+      padding: 12px 24px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-family);
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    .edw-decode-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .edw-decode-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Results section */
+    .edw-results-section {
+      display: none;
+    }
+
+    .edw-results-section.visible {
+      display: block;
+    }
+
+    .edw-result-card {
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-primary);
+      margin-bottom: 16px;
+    }
+
+    .edw-result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .edw-result-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px 0;
+    }
+
+    .edw-provider-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .edw-confidence-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .edw-confidence-badge.high {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .edw-confidence-badge.medium {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .edw-confidence-badge.low {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
+    }
+
+    .edw-severity-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    .edw-severity-badge.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
+    }
+
+    .edw-severity-badge.warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .edw-explanation {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border-left: 4px solid var(--primary-color);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .edw-explanation h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .edw-explanation p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .edw-fix {
+      padding: 16px;
+      background: linear-gradient(
+        90deg,
+        rgba(16, 185, 129, 0.05) 0%,
+        transparent 100%
+      );
+      border-left: 4px solid var(--success-color);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .edw-fix h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .edw-fix-steps {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    .edw-fix-steps li {
+      margin-bottom: 6px;
+    }
+
+    .edw-docs-link {
+      margin-top: 12px;
+      display: inline-block;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .edw-docs-link:hover {
+      text-decoration: underline;
+    }
+
+    .edw-suggestions {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+    }
+
+    .edw-suggestions h4 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .edw-suggestions-list {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    .edw-suggestions-list li {
+      margin-bottom: 6px;
+    }
+
+    /* Share URL */
+    .edw-share-section {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .edw-share-section label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .edw-share-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      background: var(--bg-primary);
+    }
+
+    .edw-copy-btn {
+      padding: 8px 16px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+    }
+
+    .edw-copy-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Email capture section */
+    .edw-email-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: linear-gradient(
+        135deg,
+        rgba(37, 99, 235, 0.05) 0%,
+        rgba(124, 58, 237, 0.05) 100%
+      );
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .edw-email-section h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .edw-email-section p {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .edw-email-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .edw-email-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font-family);
+    }
+
+    .edw-email-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .edw-email-btn {
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+      transition: background 0.2s;
+    }
+
+    .edw-email-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .edw-email-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .edw-email-success {
+      display: none;
+      padding: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success-color);
+      border-radius: 6px;
+      color: var(--success-color);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .edw-email-success.visible {
+      display: block;
+    }
+
+    .edw-email-error {
+      display: none;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--error-color);
+    }
+
+    .edw-email-error.visible {
+      display: block;
+    }
+
+    /* Loading state */
+    .edw-loading {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .edw-loading.visible {
+      display: block;
+    }
+
+    .edw-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: edw-spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes edw-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Error state */
+    .edw-error {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: var(--error-color);
+      font-size: 14px;
+    }
+
+    .edw-error.visible {
+      display: block;
+    }
+
+    /* Footer */
+    .edw-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .edw-footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .edw-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 500px) {
+      .edw-content {
+        padding: 20px;
+      }
+
+      .edw-header {
+        padding: 20px;
+      }
+
+      .edw-header h2 {
+        font-size: 20px;
+      }
+
+      .edw-result-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .edw-share-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .edw-share-input {
+        min-width: 100%;
+      }
+
+      .edw-email-form {
+        flex-direction: column;
+      }
+
+      .edw-email-input {
+        min-width: 100%;
+      }
+    }
+  </style>
+
+  <!-- Header -->
+  <div class="edw-header">
+    <h2>🔍 AI Error Decoder</h2>
+    <p>Paste an API error → Get plain English explanation + fix</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="edw-content">
+    <!-- Input Section -->
+    <div class="edw-input-section">
+      <h3>Paste Your Error Message</h3>
+      <textarea
+        id="edw-error-input"
+        class="edw-textarea"
+        placeholder="Example: Rate limit exceeded. Please try again in 10 seconds..."
+        rows="4"
+      ></textarea>
+      <button id="edw-decode-btn" class="edw-decode-btn">Decode Error</button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="edw-loading" class="edw-loading">
+      <div class="edw-spinner"></div>
+      <p>Decoding error...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="edw-error" class="edw-error"></div>
+
+    <!-- Results Section -->
+    <div id="edw-results" class="edw-results-section">
+      <div id="edw-result-card" class="edw-result-card"></div>
+
+      <!-- Share URL -->
+      <div class="edw-share-section">
+        <label>Share this result:</label>
+        <input
+          type="text"
+          id="edw-share-url"
+          class="edw-share-input"
+          readonly
+        />
+        <button id="edw-copy-btn" class="edw-copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <!-- Email Capture -->
+    <div class="edw-email-section">
+      <h4>📧 Get Error Decoder Updates</h4>
+      <p>Subscribe to get tips on fixing common AI API errors</p>
+      <form id="edw-email-form" class="edw-email-form">
+        <input
+          type="email"
+          id="edw-email-input"
+          class="edw-email-input"
+          placeholder="your@email.com"
+          required
+        />
+        <button type="submit" id="edw-email-btn" class="edw-email-btn">
+          Subscribe
+        </button>
+      </form>
+      <div id="edw-email-success" class="edw-email-success"></div>
+      <div id="edw-email-error" class="edw-email-error"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="edw-footer">
+      <p>
+        Powered by
+        <a href="https://ai-buzz.com" target="_blank" rel="noopener"
+          >AI-Buzz Tools</a
+        >
+        ·
+        <a
+          href="https://ai-buzz.com/ai-error-decoder"
+          target="_blank"
+          rel="noopener"
+          >Full Version</a
+        >
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_BASE = window.location.origin;
+      const SHARE_BASE = "https://www.ai-buzz.com/ai-error-decoder";
+
+      // Elements
+      const errorInputEl = document.getElementById("edw-error-input");
+      const decodeBtnEl = document.getElementById("edw-decode-btn");
+      const loadingEl = document.getElementById("edw-loading");
+      const errorEl = document.getElementById("edw-error");
+      const resultsEl = document.getElementById("edw-results");
+      const resultCardEl = document.getElementById("edw-result-card");
+      const shareUrlEl = document.getElementById("edw-share-url");
+      const copyBtnEl = document.getElementById("edw-copy-btn");
+      const emailFormEl = document.getElementById("edw-email-form");
+      const emailInputEl = document.getElementById("edw-email-input");
+      const emailBtnEl = document.getElementById("edw-email-btn");
+      const emailSuccessEl = document.getElementById("edw-email-success");
+      const emailErrorEl = document.getElementById("edw-email-error");
+
+      // Helper functions
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function showLoading() {
+        loadingEl.classList.add("visible");
+        errorEl.classList.remove("visible");
+        resultsEl.classList.remove("visible");
+        decodeBtnEl.disabled = true;
+      }
+
+      function hideLoading() {
+        loadingEl.classList.remove("visible");
+        decodeBtnEl.disabled = false;
+      }
+
+      function showError(message) {
+        errorEl.textContent = message;
+        errorEl.classList.add("visible");
+        resultsEl.classList.remove("visible");
+      }
+
+      function showResults() {
+        errorEl.classList.remove("visible");
+        resultsEl.classList.add("visible");
+      }
+
+      // Decode error
+      async function decodeError() {
+        const errorMessage = errorInputEl.value.trim();
+
+        if (!errorMessage) {
+          showError("Please enter an error message");
+          return;
+        }
+
+        showLoading();
+
+        try {
+          const response = await fetch(`${API_BASE}/error-decoder/decode`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ error_message: errorMessage }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            displayResult(data);
+            updateShareUrl(errorMessage);
+            hideLoading();
+            showResults();
+          } else {
+            throw new Error("Decoding failed");
+          }
+        } catch (error) {
+          console.error("Decode error:", error);
+          hideLoading();
+          showError(error.message || "An error occurred. Please try again.");
+        }
+      }
+
+      function displayResult(data) {
+        if (data.decoded) {
+          const decoded = data.decoded;
+          const pattern = decoded.pattern;
+
+          // Format fix steps
+          const fixSteps = pattern.fix.split("\n").filter((s) => s.trim());
+          const fixHtml = fixSteps
+            .map((step) => {
+              const numMatch = step.match(/^(\d+)\.\s*(.+)$/);
+              if (numMatch) {
+                return `<li>${escapeHtml(numMatch[2])}</li>`;
+              }
+              return `<li>${escapeHtml(step)}</li>`;
+            })
+            .join("");
+
+          // Build result HTML
+          const resultHtml = `
+            <div class="edw-result-header">
+              <div>
+                <h3 class="edw-result-title">${escapeHtml(pattern.title)}</h3>
+                <span class="edw-provider-badge">${escapeHtml(pattern.provider)}</span>
+                <span class="edw-severity-badge ${pattern.severity}">${pattern.severity}</span>
+                <span class="edw-confidence-badge ${decoded.confidence}">${decoded.confidence} confidence</span>
+              </div>
+            </div>
+            <div class="edw-explanation">
+              <h4>What this means:</h4>
+              <p>${escapeHtml(pattern.explanation)}</p>
+            </div>
+            <div class="edw-fix">
+              <h4>How to fix:</h4>
+              <ol class="edw-fix-steps">${fixHtml}</ol>
+            </div>
+            ${pattern.docs_url ? `<a href="${pattern.docs_url}" target="_blank" rel="noopener" class="edw-docs-link">📚 View Documentation →</a>` : ""}
+          `;
+
+          resultCardEl.innerHTML = resultHtml;
+        } else {
+          // No match found - show suggestions
+          const suggestionsHtml = data.suggestions
+            .map((s) => `<li>${escapeHtml(s)}</li>`)
+            .join("");
+
+          const resultHtml = `
+            <div class="edw-result-header">
+              <h3 class="edw-result-title">No Pattern Matched</h3>
+            </div>
+            <div class="edw-explanation">
+              <h4>We couldn't find a specific match for this error.</h4>
+              <p>Here are some general suggestions that might help:</p>
+            </div>
+            <div class="edw-suggestions">
+              <ol class="edw-suggestions-list">${suggestionsHtml}</ol>
+            </div>
+          `;
+
+          resultCardEl.innerHTML = resultHtml;
+        }
+      }
+
+      function updateShareUrl(errorMessage) {
+        const encoded = encodeURIComponent(errorMessage);
+        const url = `${SHARE_BASE}?error=${encoded}`;
+        shareUrlEl.value = url;
+      }
+
+      function handleCopy() {
+        shareUrlEl.select();
+        navigator.clipboard
+          .writeText(shareUrlEl.value)
+          .then(() => {
+            copyBtnEl.textContent = "Copied!";
+            setTimeout(() => {
+              copyBtnEl.textContent = "Copy";
+            }, 2000);
+          })
+          .catch(() => {
+            document.execCommand("copy");
+            copyBtnEl.textContent = "Copied!";
+            setTimeout(() => {
+              copyBtnEl.textContent = "Copy";
+            }, 2000);
+          });
+      }
+
+      async function handleEmailSubmit(e) {
+        e.preventDefault();
+
+        const email = emailInputEl.value.trim();
+        if (!email) return;
+
+        emailBtnEl.disabled = true;
+        emailErrorEl.classList.remove("visible");
+        emailSuccessEl.classList.remove("visible");
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/error-decoder/alerts/subscribe`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email }),
+            },
+          );
+
+          const data = await response.json();
+
+          if (data.success) {
+            emailSuccessEl.textContent = data.message;
+            emailSuccessEl.classList.add("visible");
+            emailInputEl.value = "";
+          } else {
+            throw new Error(data.message || "Subscription failed");
+          }
+        } catch (error) {
+          emailErrorEl.textContent =
+            error.message || "Failed to subscribe. Please try again.";
+          emailErrorEl.classList.add("visible");
+        } finally {
+          emailBtnEl.disabled = false;
+        }
+      }
+
+      // Check for error in URL params (for shareable links)
+      const urlParams = new URLSearchParams(window.location.search);
+      const errorParam = urlParams.get("error");
+      if (errorParam) {
+        errorInputEl.value = decodeURIComponent(errorParam);
+        // Auto-decode if error is provided
+        setTimeout(() => decodeError(), 500);
+      }
+
+      // Event listeners
+      decodeBtnEl.addEventListener("click", decodeError);
+      errorInputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+          decodeError();
+        }
+      });
+      copyBtnEl.addEventListener("click", handleCopy);
+      emailFormEl.addEventListener("submit", handleEmailSubmit);
+    })();
+  </script>
+</div>

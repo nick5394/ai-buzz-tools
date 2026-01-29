@@ -1,0 +1,78 @@
+{
+  "_metadata": {
+    "description": "AI API provider endpoints for status monitoring",
+    "last_updated": "2026-01-28"
+  },
+  "providers": {
+    "openai": {
+      "name": "OpenAI",
+      "endpoint": "https://api.openai.com/v1/models",
+      "method": "GET",
+      "expected_codes": [401],
+      "status_page": "https://status.openai.com/"
+    },
+    "anthropic": {
+      "name": "Anthropic",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "method": "POST",
+      "expected_codes": [401],
+      "status_page": "https://status.anthropic.com/"
+    },
+    "google": {
+      "name": "Google AI",
+      "endpoint": "https://generativelanguage.googleapis.com/v1/models",
+      "method": "GET",
+      "expected_codes": [400],
+      "status_page": "https://status.cloud.google.com/"
+    },
+    "mistral": {
+      "name": "Mistral AI",
+      "endpoint": "https://api.mistral.ai/v1/models",
+      "method": "GET",
+      "expected_codes": [401],
+      "status_page": "https://status.mistral.ai/"
+    },
+    "groq": {
+      "name": "Groq",
+      "endpoint": "https://api.groq.com/openai/v1/models",
+      "method": "GET",
+      "expected_codes": [401],
+      "status_page": "https://status.groq.com/"
+    },
+    "cohere": {
+      "name": "Cohere",
+      "endpoint": "https://api.cohere.ai/v1/models",
+      "method": "GET",
+      "expected_codes": [401],
+      "status_page": "https://status.cohere.com/"
+    },
+    "perplexity": {
+      "name": "Perplexity",
+      "endpoint": "https://api.perplexity.ai/chat/completions",
+      "method": "POST",
+      "expected_codes": [401],
+      "status_page": "https://status.perplexity.ai/"
+    },
+    "together": {
+      "name": "Together AI",
+      "endpoint": "https://api.together.xyz/v1/models",
+      "method": "GET",
+      "expected_codes": [401],
+      "status_page": "https://status.together.ai/"
+    },
+    "replicate": {
+      "name": "Replicate",
+      "endpoint": "https://api.replicate.com/v1/models",
+      "method": "GET",
+      "expected_codes": [401],
+      "status_page": "https://status.replicate.com/"
+    },
+    "huggingface": {
+      "name": "Hugging Face",
+      "endpoint": "https://api-inference.huggingface.co/models/gpt2",
+      "method": "POST",
+      "expected_codes": [200, 401, 503],
+      "status_page": "https://status.huggingface.co/"
+    }
+  }
+}

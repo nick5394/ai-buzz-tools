@@ -1,0 +1,421 @@
+---
+description: AI-Buzz Tools - Core principles and decision framework for all tools
+alwaysApply: true
+---
+
+# AI-Buzz Tools
+
+## Mission
+
+**Help developers make better decisions about AI APIs.**
+
+Every tool serves one purpose: give developers the information they need, instantly, with zero friction.
+
+## Core Principles
+
+### 1. Maximize User Value
+
+Before building anything, ask: "Does this help a developer make a better decision faster?" If not, don't build it.
+
+### 2. Simplicity Over Features
+
+- One job, done exceptionally well
+- Fast beats feature-rich
+- Self-contained widgets (no external dependencies)
+- Stateless APIs (no database required)
+
+### 3. Trust Through Transparency
+
+- Show data freshness ("Updated Jan 28")
+- Link to official sources
+- Clear error messages
+- Honest about limitations
+
+### 4. Zero Friction
+
+- No signup required
+- Optional email capture (non-blocking)
+- Works in 2 clicks
+- Shareable URLs
+
+## Architectural Philosophy
+
+These principles guide technical decisions. When in doubt, return to these.
+
+### 1. Boring Technology Wins
+
+Use well-understood, proven tools. FastAPI, vanilla JS, JSON files — not because they're exciting, but because they're predictable. Debugging time matters more than resume keywords.
+
+### 2. YAGNI (You Aren't Gonna Need It)
+
+Don't build for hypothetical future requirements. Build for today's users. If you need it later, add it later. Most "future-proofing" is wasted effort.
+
+### 3. Prefer Reversible Decisions
+
+Choose options that are easy to undo. File-based JSON over databases (easy to change). Stateless APIs (easy to redeploy). No vendor lock-in. The best architecture preserves optionality.
+
+### 4. Design for Failure
+
+Assume external services will fail. Mailchimp down? Log and continue. API timeout? Show graceful error. Every integration point is a failure point — handle it explicitly.
+
+### 5. Dependencies Are Liabilities
+
+Every dependency is code you don't control. It can break, have security issues, or stop being maintained. The current 8-dependency stack is intentional. New dependencies need strong justification.
+
+### 6. Deletion Is a Feature
+
+The best code is no code. Before adding, ask: can we delete something instead? Removing unused stubs is better than leaving dead code. Simplicity compounds.
+
+### 7. Optimize for Comprehension
+
+Code is read 10x more than it's written. Obvious beats clever. Consistent beats optimal. A junior developer should understand any file in under 5 minutes.
+
+### 8. Ship, Then Iterate
+
+Perfect is the enemy of deployed. Ship the minimum useful version. Real user feedback beats hypothetical requirements. Iteration is cheaper than prediction.
+
+## Architecture Patterns
+
+**All tools follow these patterns:**
+
+- **FastAPI** with Pydantic models for validation
+- **Self-contained widgets** (HTML+CSS+JS in one file)
+- **JSON data files** with `_metadata` section
+- **Mailchimp integration** for email (graceful fallback if not configured)
+- **Share URLs** point to `ai-buzz.com` (never Render URLs)
+- **Mobile-first** responsive design (test at 375px)
+
+## Decision Framework
+
+When choosing between options:
+
+1. **Which maximizes user value?** → Choose that
+2. **Which is simpler?** → Choose that
+3. **Which is faster?** → Choose that
+4. **Which builds trust?** → Choose that
+
+If a feature doesn't clearly help users, don't build it.
+
+## Code Quality
+
+- Write code that's easy to understand
+- Extract shared utilities (don't repeat yourself)
+- Use type hints
+- Handle errors gracefully
+- Test core functionality
+
+## Decision Priority
+
+When principles conflict, choose in this order:
+
+1. **Ship working code > Perfect code** — Done beats perfect. Ship MVP, iterate if it gets traction.
+2. **User value > Developer convenience** — If it helps users, do it even if it's more work.
+3. **Simple solution > Clever solution** — Obvious code beats clever code.
+4. **Copy existing pattern > Invent new pattern** — Consistency beats novelty.
+5. **Ask if unsure > Guess and build wrong thing** — 5 minutes of clarification saves hours of rework.
+
+### When In Doubt
+
+- **Scope unclear?** → Build the minimum viable version
+- **Multiple approaches?** → Ask which to use before building
+- **New pattern needed?** → Check if an existing pattern works first
+- **Feature feels out of scope?** → Ask before building
+
+## Boundaries
+
+**Don't do these without explicit approval:**
+
+- Don't add new pip dependencies (keep deployment simple)
+- Don't create new architectural patterns when existing ones work
+- Don't refactor working code unless explicitly asked
+- Don't build features not in the current tools roadmap
+- Don't optimize prematurely — ship first, optimize if needed
+- Don't change `api/shared.py` without considering impact on all tools
+- Don't use React/Vue/build tools — vanilla HTML/CSS/JS only
+- Don't point share URLs to Render — always use ai-buzz.com
+
+## Reference Implementation
+
+**When building a new tool, copy from error_decoder.** It's the cleanest, most complete implementation.
+
+### Files to Copy From
+
+| Component      | Reference File                      | What to Copy                                                                                             |
+| -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **API Router** | `api/error_decoder.py`              | Pydantic models at top, helper functions in middle, endpoints at bottom, error handling pattern, logging |
+| **Data File**  | `data/error_patterns.json`          | `_metadata` section structure, consistent data format                                                    |
+| **Widget**     | `widgets/error_decoder_widget.html` | CSS variables, self-contained structure, loading states, error handling, mobile responsive patterns      |
+| **Tests**      | `tests/test_error_decoder.py`       | Class-per-endpoint structure, fixtures usage, edge case coverage                                         |
+
+### Code Patterns to Follow
+
+**API Error Handling:**
+
+```python
+try:
+    data = load_json_data("your_data.json")
+    # ... process ...
+except FileNotFoundError:
+    logger.error("your_data.json not found")
+    raise HTTPException(status_code=500, detail="Data not available.")
+except Exception as e:
+    logger.error(f"Error processing: {str(e)}", exc_info=True)
+    raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+```
+
+**Widget CSS Variables (copy these exactly):**
+
+```css
+--primary-color: #2563eb;
+--primary-hover: #1d4ed8;
+--success-color: #10b981;
+--error-color: #ef4444;
+--warning-color: #f59e0b;
+--text-primary: #1f2937;
+--text-secondary: #6b7280;
+--bg-primary: #ffffff;
+--bg-secondary: #f9fafb;
+--border-color: #e5e7eb;
+--border-radius: 12px;
+```
+
+**Widget API Base URL (at top of JS):**
+
+```javascript
+const API_BASE = window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
+```
+
+## Testing Framework
+
+**Every tool MUST pass this checklist before being considered complete.**
+
+### Pre-Development Checklist
+
+- [ ] **Data File Created** (`data/{tool_name}.json`)
+  - [ ] Has `_metadata` section with `last_updated`, `update_frequency`, `notes`, `sources`
+  - [ ] Data structure is consistent and well-documented
+  - [ ] Valid JSON (no syntax errors)
+  - [ ] Contains realistic, useful data
+
+- [ ] **API Router Created** (`api/{tool_name}.py`)
+  - [ ] Follows same structure as existing routers
+  - [ ] Uses Pydantic models for request/response validation
+  - [ ] Imports from `api.shared` for common utilities
+  - [ ] Has proper error handling with HTTPException
+  - [ ] Logs errors appropriately
+
+### Required Endpoints Checklist
+
+Each tool must implement these standard endpoints:
+
+- [ ] **Main Functionality Endpoint** (e.g., `/decode`, `/calculate`, `/check`)
+  - [ ] POST version for API calls
+  - [ ] GET version for shareable URLs (if applicable)
+  - [ ] Returns `{success: bool, ...}` structure
+  - [ ] Validates input with Pydantic models
+  - [ ] Handles errors gracefully
+
+- [ ] **Data Listing Endpoint** (e.g., `/patterns`, `/models`, `/providers`)
+  - [ ] Returns all available data
+  - [ ] Includes metadata (last_updated, etc.)
+  - [ ] Properly formatted response
+
+- [ ] **Email Subscription Endpoint** (`/alerts/subscribe`)
+  - [ ] Uses `api.shared.subscribe_email()`
+  - [ ] Tool-specific tag: `tool:{tool-name}`
+  - [ ] Appropriate interest tags
+  - [ ] Validates email with Pydantic EmailStr
+  - [ ] Returns success message
+
+- [ ] **Widget Endpoint** (`/widget`)
+  - [ ] Returns HTMLResponse
+  - [ ] Serves widget file from `widgets/` directory
+  - [ ] Handles FileNotFoundError gracefully
+
+### Widget Checklist
+
+- [ ] **Self-Contained** (`widgets/{tool_name}_widget.html`)
+  - [ ] All CSS inline in `<style>` tag
+  - [ ] All JavaScript inline in `<script>` tag
+  - [ ] No external dependencies (except API calls)
+  - [ ] No CDN links (except for share URLs to ai-buzz.com)
+
+- [ ] **Functionality**
+  - [ ] Main feature works (decode, calculate, check, etc.)
+  - [ ] Share URL generation works
+  - [ ] Email subscription form works
+  - [ ] Error handling displays user-friendly messages
+  - [ ] Loading states shown during API calls
+
+- [ ] **Design**
+  - [ ] Matches existing widget style (same CSS variables)
+  - [ ] Mobile responsive (test at 375px width)
+  - [ ] Header with gradient background
+  - [ ] Footer with links to ai-buzz.com
+  - [ ] Consistent spacing and typography
+
+- [ ] **Share URLs**
+  - [ ] Share URLs point to `https://www.ai-buzz.com/...` (NOT Render URLs)
+  - [ ] URL parameters work correctly
+  - [ ] Copy button works
+  - [ ] Auto-loads data from URL params when present
+
+### Testing Checklist
+
+**Run `pytest` before considering tool complete.**
+
+**Pre-Push Hook (Required):**
+
+- [ ] **Pre-push hook installed** - Run `./scripts/install-hooks.sh` before first push
+- [ ] **Hook verified** - Hook runs automatically on `git push` to main
+- [ ] **Tests pass locally** - Hook blocks push if pytest fails
+- [ ] **Localhost verification** - Hook tests changed tools on localhost before push
+
+The pre-push hook ensures:
+
+1. All unit tests pass (`pytest`)
+2. Changed tools work on localhost (spins up server, tests endpoints)
+3. Push is blocked if any check fails
+
+**Note:** Hook can be bypassed with `git push --no-verify` in emergencies, but CI will still block merge if tests fail.
+
+- [ ] **Unit Tests** (`tests/test_{tool_name}.py`)
+  - [ ] Test main functionality endpoint (success cases)
+  - [ ] Test error cases (invalid input, missing data)
+  - [ ] Test data listing endpoint
+  - [ ] Test email subscription endpoint
+  - [ ] Test widget endpoint
+  - [ ] Test GET version of endpoints (if applicable)
+  - [ ] Test edge cases (empty input, very long input, etc.)
+
+- [ ] **Integration Tests**
+  - [ ] Test full flow: main endpoint → patterns → subscribe → widget
+  - [ ] Test that all endpoints return proper status codes
+  - [ ] Test response structure matches Pydantic models
+
+- [ ] **Localhost Testing**
+  - [ ] Start server: `uvicorn main:app --reload`
+  - [ ] Test main endpoint via browser/curl: `http://localhost:8000/{tool}/...`
+  - [ ] Test widget loads: `http://localhost:8000/{tool}/widget`
+  - [ ] Test widget functionality in browser
+  - [ ] Test share URLs work
+  - [ ] Test mobile responsive design (Chrome DevTools 375px)
+  - [ ] Test email subscription (check console for Mailchimp errors)
+
+- [ ] **Data Validation**
+  - [ ] JSON file loads without errors
+  - [ ] All required fields present in data
+  - [ ] No duplicate IDs/keys
+  - [ ] Data is realistic and useful
+
+### Integration Checklist
+
+- [ ] **Router Added to main.py**
+  - [ ] Import statement added
+  - [ ] Router included with correct prefix
+  - [ ] Health check updated to show tool as "available"
+
+- [ ] **Documentation**
+  - [ ] README.md updated with new endpoints
+  - [ ] Cursor rules updated (if tool-specific patterns)
+
+### Deployment Checklist
+
+- [ ] **Pre-Deploy Verification**
+  - [ ] All tests pass: `pytest`
+  - [ ] No linting errors
+  - [ ] Server starts without errors
+  - [ ] Widget loads and works
+  - [ ] Share URLs point to ai-buzz.com (not localhost/Render)
+
+- [ ] **Post-Deploy Verification**
+  - [ ] Test endpoints on production URL
+  - [ ] Test widget on production
+  - [ ] Verify share URLs work
+  - [ ] Check error handling works
+
+### Test File Structure
+
+Every tool should have a test file following this pattern:
+
+```python
+# tests/test_{tool_name}.py
+
+class Test{ToolName}Main:
+    """Test the main functionality endpoint."""
+    def test_success_case(self, client):
+        # Test successful operation
+    def test_error_cases(self, client):
+        # Test error handling
+
+class Test{ToolName}Data:
+    """Test data listing endpoint."""
+    def test_get_all_data(self, client):
+        # Test data retrieval
+
+class Test{ToolName}Subscribe:
+    """Test email subscription."""
+    def test_subscribe_valid_email(self, client):
+        # Test subscription
+
+class Test{ToolName}Widget:
+    """Test widget endpoint."""
+    def test_get_widget(self, client):
+        # Test widget HTML
+    def test_widget_is_self_contained(self, client):
+        # Verify no external deps
+
+class Test{ToolName}Integration:
+    """Integration tests."""
+    def test_full_flow(self, client):
+        # Test complete user flow
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run tests for specific tool
+pytest tests/test_error_decoder.py
+
+# Run with coverage
+pytest --cov=api --cov-report=html
+
+# Run with verbose output
+pytest -v
+
+# Run specific test
+pytest tests/test_error_decoder.py::TestErrorDecoderDecode::test_decode_rate_limit_error
+```
+
+### Quick Test Commands
+
+```bash
+# Start server
+uvicorn main:app --reload
+
+# Test endpoint (replace {tool} with tool name)
+curl http://localhost:8000/{tool}/patterns | python -m json.tool
+curl -X POST http://localhost:8000/{tool}/decode -H "Content-Type: application/json" -d '{"error_message": "test"}' | python -m json.tool
+
+# Test widget
+curl http://localhost:8000/{tool}/widget | head -50
+```
+
+## Tools
+
+### Pricing Calculator
+
+**Purpose:** Compare AI API costs instantly
+
+### Status Page
+
+**Purpose:** Know when AI APIs are down
+
+### Error Decoder
+
+**Purpose:** Understand and fix API errors
+
+Each tool is independent but shares the same principles and patterns.

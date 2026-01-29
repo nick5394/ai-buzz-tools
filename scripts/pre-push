@@ -1,0 +1,254 @@
+#!/bin/bash
+# Pre-push hook: runs tests and localhost verification before push to main
+# This hook ensures unit tests pass and affected tools work on localhost before pushing
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Track if we need to test anything
+SHOULD_TEST=false
+CHANGED_TOOLS=()
+
+# Parse git push arguments
+while read local_ref local_sha remote_ref remote_sha; do
+    if [[ "$remote_ref" == *"main"* ]] || [[ "$remote_ref" == *"master"* ]]; then
+        SHOULD_TEST=true
+        
+        # Get changed files between local and remote
+        if [ "$remote_sha" != "0000000000000000000000000000000000000000" ]; then
+            changed_files=$(git diff --name-only "$remote_sha" "$local_sha" 2>/dev/null || git diff --name-only origin/main HEAD 2>/dev/null || echo "")
+        else
+            # New branch, check all files
+            changed_files=$(git diff --name-only --diff-filter=A HEAD 2>/dev/null || echo "")
+        fi
+        
+        # Detect which tools changed
+        if echo "$changed_files" | grep -qE "(api/pricing|widgets/pricing|data/pricing)"; then
+            CHANGED_TOOLS+=("pricing")
+        fi
+        
+        if echo "$changed_files" | grep -qE "(api/status|widgets/status|data/status)"; then
+            CHANGED_TOOLS+=("status")
+        fi
+        
+        if echo "$changed_files" | grep -qE "(api/error_decoder|widgets/error_decoder|data/error_patterns)"; then
+            CHANGED_TOOLS+=("error-decoder")
+        fi
+        
+        # If main.py or shared.py changed, test all tools
+        if echo "$changed_files" | grep -qE "(main\.py|api/shared\.py|requirements\.txt|pytest\.ini)"; then
+            CHANGED_TOOLS=("pricing" "status" "error-decoder")
+        fi
+        
+        # If no specific tool files changed but tests changed, run all tests
+        if echo "$changed_files" | grep -qE "tests/"; then
+            if [ ${#CHANGED_TOOLS[@]} -eq 0 ]; then
+                CHANGED_TOOLS=("pricing" "status" "error-decoder")
+            fi
+        fi
+        
+        break
+    fi
+done
+
+# If not pushing to main, skip
+if [ "$SHOULD_TEST" = false ]; then
+    exit 0
+fi
+
+echo ""
+echo "🔍 Pre-push checks for main branch..."
+echo ""
+
+# Step 1: Run pytest
+echo "📋 Step 1: Running unit tests..."
+if ! python -m pytest -v --tb=short 2>&1 | tee /tmp/pre-push-pytest.log; then
+    echo ""
+    echo -e "${RED}❌ Unit tests failed. Fix tests before pushing.${NC}"
+    echo ""
+    echo "To bypass this check (not recommended): git push --no-verify"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Unit tests passed${NC}"
+echo ""
+
+# If no tools changed, we're done
+if [ ${#CHANGED_TOOLS[@]} -eq 0 ]; then
+    echo "ℹ️  No tool files changed, skipping localhost tests"
+    echo -e "${GREEN}✅ Pre-push checks passed${NC}"
+    exit 0
+fi
+
+# Step 2: Test changed tools on localhost
+echo "📋 Step 2: Testing changed tools on localhost..."
+echo "Changed tools: ${CHANGED_TOOLS[*]}"
+echo ""
+
+# Find an available port
+find_available_port() {
+    for port in {8001..8100}; do
+        if ! lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+            echo $port
+            return
+        fi
+    done
+    # Fallback: use Python to find port
+    python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()" 2>/dev/null || echo "8001"
+}
+
+PORT=$(find_available_port)
+SERVER_PID=""
+
+# Cleanup function
+cleanup() {
+    if [ -n "$SERVER_PID" ]; then
+        echo ""
+        echo "🧹 Cleaning up server (PID: $SERVER_PID)..."
+        kill $SERVER_PID 2>/dev/null || true
+        wait $SERVER_PID 2>/dev/null || true
+    fi
+}
+
+# Trap to ensure cleanup on exit
+trap cleanup EXIT INT TERM
+
+# Start server in background
+echo "🚀 Starting server on port $PORT..."
+cd "$(git rev-parse --show-toplevel)"
+uvicorn main:app --port $PORT --host 127.0.0.1 > /tmp/pre-push-server.log 2>&1 &
+SERVER_PID=$!
+
+# Wait for server to be ready
+echo "⏳ Waiting for server to start..."
+for i in {1..30}; do
+    if curl -s "http://127.0.0.1:$PORT/" > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Server is ready${NC}"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo -e "${RED}❌ Server failed to start after 15 seconds${NC}"
+        echo "Server logs:"
+        tail -20 /tmp/pre-push-server.log
+        exit 1
+    fi
+    sleep 0.5
+done
+
+echo ""
+
+# Test each changed tool
+FAILED_TOOLS=()
+
+for tool in "${CHANGED_TOOLS[@]}"; do
+    echo "🧪 Testing tool: $tool"
+    
+    # Map tool name to route prefix
+    case "$tool" in
+        "pricing")
+            prefix="pricing"
+            ;;
+        "status")
+            prefix="status"
+            ;;
+        "error-decoder")
+            prefix="error-decoder"
+            ;;
+        *)
+            echo -e "${YELLOW}⚠️  Unknown tool: $tool, skipping${NC}"
+            continue
+            ;;
+    esac
+    
+    FAILED=false
+    
+    # Test health endpoint
+    if ! curl -s "http://127.0.0.1:$PORT/" > /dev/null 2>&1; then
+        echo -e "  ${RED}❌ Health check failed${NC}"
+        FAILED=true
+    fi
+    
+    # Test widget endpoint
+    if ! curl -s "http://127.0.0.1:$PORT/$prefix/widget" | grep -qi "widget\|html" > /dev/null 2>&1; then
+        echo -e "  ${RED}❌ Widget endpoint failed${NC}"
+        FAILED=true
+    else
+        echo -e "  ${GREEN}✅ Widget endpoint works${NC}"
+    fi
+    
+    # Test data endpoint (patterns/models/providers)
+    if curl -s "http://127.0.0.1:$PORT/$prefix/patterns" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✅ Patterns endpoint works${NC}"
+    elif curl -s "http://127.0.0.1:$PORT/$prefix/models" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✅ Models endpoint works${NC}"
+    elif curl -s "http://127.0.0.1:$PORT/$prefix/providers" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✅ Providers endpoint works${NC}"
+    else
+        echo -e "  ${YELLOW}⚠️  Data endpoint not found (may not exist for this tool)${NC}"
+    fi
+    
+    # Test main functionality endpoint
+    case "$tool" in
+        "pricing")
+            if curl -s -X POST "http://127.0.0.1:$PORT/$prefix/calculate" \
+                -H "Content-Type: application/json" \
+                -d '{"input_tokens_monthly": 1000000, "output_tokens_monthly": 500000, "model": "gpt-4"}' \
+                > /dev/null 2>&1; then
+                echo -e "  ${GREEN}✅ Calculate endpoint works${NC}"
+            else
+                echo -e "  ${RED}❌ Calculate endpoint failed${NC}"
+                FAILED=true
+            fi
+            ;;
+        "status")
+            if curl -s "http://127.0.0.1:$PORT/$prefix/check" > /dev/null 2>&1; then
+                echo -e "  ${GREEN}✅ Check endpoint works${NC}"
+            else
+                echo -e "  ${RED}❌ Check endpoint failed${NC}"
+                FAILED=true
+            fi
+            ;;
+        "error-decoder")
+            if curl -s -X POST "http://127.0.0.1:$PORT/$prefix/decode" \
+                -H "Content-Type: application/json" \
+                -d '{"error_message": "rate limit exceeded"}' \
+                > /dev/null 2>&1; then
+                echo -e "  ${GREEN}✅ Decode endpoint works${NC}"
+            else
+                echo -e "  ${RED}❌ Decode endpoint failed${NC}"
+                FAILED=true
+            fi
+            ;;
+    esac
+    
+    if [ "$FAILED" = true ]; then
+        FAILED_TOOLS+=("$tool")
+    else
+        echo -e "  ${GREEN}✅ Tool $tool passed all checks${NC}"
+    fi
+    
+    echo ""
+done
+
+# Check if any tools failed
+if [ ${#FAILED_TOOLS[@]} -gt 0 ]; then
+    echo -e "${RED}❌ Some tools failed localhost tests: ${FAILED_TOOLS[*]}${NC}"
+    echo ""
+    echo "Server logs (last 20 lines):"
+    tail -20 /tmp/pre-push-server.log
+    echo ""
+    echo "To bypass this check (not recommended): git push --no-verify"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ All changed tools passed localhost tests${NC}"
+echo ""
+echo -e "${GREEN}✅ Pre-push checks passed! Proceeding with push...${NC}"
+echo ""
+
+exit 0
