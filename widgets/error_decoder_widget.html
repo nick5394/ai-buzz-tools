@@ -634,8 +634,15 @@
 
   <script>
     (function () {
-      const API_BASE = window.location.origin;
+      const API_BASE = "https://ai-buzz-tools.onrender.com";
       const SHARE_BASE = "https://www.ai-buzz.com/ai-error-decoder";
+
+      // GA4 Event Tracking Helper
+      function trackEvent(eventName, params = {}) {
+        if (typeof gtag !== 'undefined') {
+          gtag('event', eventName, params);
+        }
+      }
 
       // Elements
       const errorInputEl = document.getElementById("edw-error-input");
@@ -709,6 +716,7 @@
             updateShareUrl(errorMessage);
             hideLoading();
             showResults();
+            trackEvent('tool_used', { tool_name: 'error_decoder', action: 'decode' });
           } else {
             throw new Error("Decoding failed");
           }
@@ -796,6 +804,7 @@
             setTimeout(() => {
               copyBtnEl.textContent = "Copy";
             }, 2000);
+            trackEvent('share_created', { tool_name: 'error_decoder' });
           })
           .catch(() => {
             document.execCommand("copy");
@@ -834,6 +843,7 @@
             emailSuccessEl.textContent = data.message;
             emailSuccessEl.classList.add("visible");
             emailInputEl.value = "";
+            trackEvent('email_signup', { tool_name: 'error_decoder' });
           } else {
             throw new Error(data.message || "Subscription failed");
           }
