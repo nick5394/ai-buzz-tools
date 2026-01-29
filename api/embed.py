@@ -19,6 +19,7 @@ TOOL_ENDPOINTS = {
     "pricing": "/pricing/widget",
     "status": "/status/widget",
     "error-decoder": "/error-decoder/widget",
+    "tools-landing": "/tools/widget",
 }
 
 
@@ -68,7 +69,8 @@ async def get_embed_script():
   const toolEndpoints = {{
     'pricing': '/pricing/widget',
     'status': '/status/widget',
-    'error-decoder': '/error-decoder/widget'
+    'error-decoder': '/error-decoder/widget',
+    'tools-landing': '/tools/widget'
   }};
   
   const widgetEndpoint = toolEndpoints[toolName];

@@ -1,0 +1,324 @@
+<!-- AI Tools Landing Email Signup Widget -->
+<div id="tools-landing-widget">
+  <style>
+    /* CSS Variables for easy theming */
+    #tools-landing-widget {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --warning-color: #f59e0b;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --bg-tertiary: #f3f4f6;
+      --border-color: #e5e7eb;
+      --border-radius: 12px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, sans-serif;
+    }
+
+    #tools-landing-widget * {
+      box-sizing: border-box;
+    }
+
+    #tools-landing-widget {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 0;
+      font-family: var(--font-family);
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .tlw-header {
+      background: linear-gradient(
+        135deg,
+        var(--primary-color) 0%,
+        #7c3aed 100%
+      );
+      color: white;
+      padding: 24px 28px;
+      text-align: center;
+    }
+
+    .tlw-header h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .tlw-header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+
+    /* Main content */
+    .tlw-content {
+      padding: 28px;
+    }
+
+    /* Email section */
+    .tlw-email-section {
+      margin-bottom: 0;
+    }
+
+    .tlw-email-section h4 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .tlw-email-section > p {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .tlw-email-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tlw-email-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font-family);
+    }
+
+    .tlw-email-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .tlw-email-btn {
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font-family);
+      transition: background 0.2s;
+    }
+
+    .tlw-email-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .tlw-email-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .tlw-email-success {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success-color);
+      border-radius: 6px;
+      color: var(--success-color);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .tlw-email-success.visible {
+      display: block;
+    }
+
+    .tlw-email-error {
+      display: none;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--error-color);
+    }
+
+    .tlw-email-error.visible {
+      display: block;
+    }
+
+    /* Footer */
+    .tlw-footer {
+      padding: 16px 28px;
+      text-align: center;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .tlw-footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .tlw-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      #tools-landing-widget {
+        margin: 20px 10px;
+      }
+
+      .tlw-header {
+        padding: 20px;
+      }
+
+      .tlw-header h2 {
+        font-size: 20px;
+      }
+
+      .tlw-content {
+        padding: 20px;
+      }
+
+      .tlw-email-form {
+        flex-direction: column;
+      }
+
+      .tlw-email-input {
+        min-width: 100%;
+      }
+
+      .tlw-footer {
+        padding: 14px 20px;
+        font-size: 12px;
+      }
+    }
+  </style>
+
+  <!-- Header -->
+  <div class="tlw-header">
+    <h2>Get Tool Updates</h2>
+    <p>Be the first to know when we launch new AI developer tools</p>
+  </div>
+
+  <!-- Main content -->
+  <div class="tlw-content">
+    <!-- Email Capture -->
+    <div class="tlw-email-section">
+      <h4>Subscribe for Updates</h4>
+      <p>Get notified when we launch new tools to help you make better decisions about AI APIs</p>
+      <form id="tlw-email-form" class="tlw-email-form">
+        <input
+          type="email"
+          id="tlw-email-input"
+          class="tlw-email-input"
+          placeholder="your@email.com"
+          required
+          aria-label="Email address"
+        />
+        <button type="submit" id="tlw-email-btn" class="tlw-email-btn">
+          Subscribe
+        </button>
+      </form>
+      <div id="tlw-email-success" class="tlw-email-success"></div>
+      <div id="tlw-email-error" class="tlw-email-error"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="tlw-footer">
+    <p>
+      Powered by
+      <a href="https://ai-buzz.com" target="_blank" rel="noopener"
+        >AI-Buzz Tools</a
+      >
+      ·
+      <a
+        href="https://ai-buzz.com/ai-tools"
+        target="_blank"
+        rel="noopener"
+        >View All Tools</a
+      >
+    </p>
+  </div>
+</div>
+
+<script>
+  (function () {
+    "use strict";
+
+    // Configuration
+    const API_BASE = window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
+
+    // GA4 Event Tracking Helper
+    function trackEvent(eventName, params = {}) {
+      if (typeof gtag !== "undefined") {
+        gtag("event", eventName, params);
+      }
+    }
+
+    // Elements
+    const emailFormEl = document.getElementById("tlw-email-form");
+    const emailInputEl = document.getElementById("tlw-email-input");
+    const emailBtnEl = document.getElementById("tlw-email-btn");
+    const emailSuccessEl = document.getElementById("tlw-email-success");
+    const emailErrorEl = document.getElementById("tlw-email-error");
+
+    // Email subscription handler
+    async function handleEmailSubmit(e) {
+      e.preventDefault();
+
+      const email = emailInputEl.value.trim();
+      if (!email) return;
+
+      emailBtnEl.disabled = true;
+      emailErrorEl.classList.remove("visible");
+      emailSuccessEl.classList.remove("visible");
+
+      try {
+        const response = await fetch(`${API_BASE}/tools/alerts/subscribe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          emailSuccessEl.textContent = data.message;
+          emailSuccessEl.classList.add("visible");
+          emailInputEl.value = "";
+          trackEvent("email_signup", { tool_name: "tools-landing" });
+        } else {
+          throw new Error(data.message || "Subscription failed");
+        }
+      } catch (error) {
+        emailErrorEl.textContent =
+          error.message || "Failed to subscribe. Please try again.";
+        emailErrorEl.classList.add("visible");
+      } finally {
+        emailBtnEl.disabled = false;
+      }
+    }
+
+    // Event listeners
+    emailFormEl.addEventListener("submit", handleEmailSubmit);
+  })();
+</script>

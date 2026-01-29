@@ -9,7 +9,7 @@ import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api import pricing, status, error_decoder, embed
+from api import pricing, status, error_decoder, embed, tools_landing
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -53,6 +53,7 @@ app.add_middleware(
 app.include_router(pricing.router, prefix="/pricing", tags=["pricing"])
 app.include_router(status.router, prefix="/status", tags=["status"])
 app.include_router(error_decoder.router, prefix="/error-decoder", tags=["error-decoder"])
+app.include_router(tools_landing.router, prefix="/tools", tags=["tools-landing"])
 app.include_router(embed.router, tags=["embed"])
 
 
@@ -84,7 +85,8 @@ async def root():
         "tools": {
             "pricing": "available",
             "status": "available",
-            "error_decoder": "available"
+            "error_decoder": "available",
+            "tools_landing": "available"
         }
     }
 
