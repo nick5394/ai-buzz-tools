@@ -167,8 +167,22 @@ async def get_embed_script():
       return response.text();
     }})
     .then(function(html) {{
-      // Inject widget HTML
+      // Inject widget HTML and execute scripts
       container.innerHTML = html;
+      
+      // Scripts added via innerHTML don't execute, so we need to re-add them
+      const scripts = container.querySelectorAll('script');
+      scripts.forEach(function(oldScript) {{
+        const newScript = document.createElement('script');
+        // Copy attributes
+        Array.from(oldScript.attributes).forEach(function(attr) {{
+          newScript.setAttribute(attr.name, attr.value);
+        }});
+        // Copy content
+        newScript.textContent = oldScript.textContent;
+        // Replace old script with new one (this executes it)
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      }});
     }})
     .catch(function(error) {{
       console.error('AI-Buzz embed: Failed to load widget (attempt ' + (retryCount + 1) + ')', error);
