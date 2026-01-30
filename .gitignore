@@ -68,3 +68,7 @@ Thumbs.db
 
 # Screenshots (generated on-demand)
 screenshots/
+
+# Credentials (never commit)
+credentials/
+*.json.key

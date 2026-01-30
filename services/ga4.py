@@ -66,28 +66,51 @@ def pull_events(days: int = 30) -> Dict[str, Any]:
     try:
         client = BetaAnalyticsDataClient()
         
-        request = RunReportRequest(
-            property=f"properties/{PROPERTY_ID}",
-            date_ranges=[DateRange(
-                start_date=f"{days}daysAgo",
-                end_date="today"
-            )],
-            dimensions=[
-                Dimension(name="eventName"),
-                Dimension(name="customEvent:tool_name"),
-            ],
-            metrics=[
-                Metric(name="eventCount"),
-            ],
-        )
-        
-        response = client.run_report(request)
+        # First try with tool_name custom dimension, fall back to eventName only
+        try:
+            request = RunReportRequest(
+                property=f"properties/{PROPERTY_ID}",
+                date_ranges=[DateRange(
+                    start_date=f"{days}daysAgo",
+                    end_date="today"
+                )],
+                dimensions=[
+                    Dimension(name="eventName"),
+                    Dimension(name="customEvent:tool_name"),
+                ],
+                metrics=[
+                    Metric(name="eventCount"),
+                ],
+            )
+            response = client.run_report(request)
+            has_tool_name = True
+        except Exception as e:
+            # tool_name dimension not set up, fall back to eventName only
+            logger.info(f"tool_name dimension not available, using eventName only: {e}")
+            request = RunReportRequest(
+                property=f"properties/{PROPERTY_ID}",
+                date_ranges=[DateRange(
+                    start_date=f"{days}daysAgo",
+                    end_date="today"
+                )],
+                dimensions=[
+                    Dimension(name="eventName"),
+                ],
+                metrics=[
+                    Metric(name="eventCount"),
+                ],
+            )
+            response = client.run_report(request)
+            has_tool_name = False
         
         # Process response into structured data
         events: Dict[str, Dict[str, int]] = {}
         for row in response.rows:
             event_name = row.dimension_values[0].value
-            tool_name = row.dimension_values[1].value or "unknown"
+            if has_tool_name:
+                tool_name = row.dimension_values[1].value or "unknown"
+            else:
+                tool_name = "all"
             count = int(row.metric_values[0].value)
             
             if event_name not in events:
@@ -196,30 +219,51 @@ def pull_funnel(days: int = 30) -> Dict[str, Any]:
     try:
         client = BetaAnalyticsDataClient()
         
-        # Get tool-specific events
-        request = RunReportRequest(
-            property=f"properties/{PROPERTY_ID}",
-            date_ranges=[DateRange(
-                start_date=f"{days}daysAgo",
-                end_date="today"
-            )],
-            dimensions=[
-                Dimension(name="eventName"),
-                Dimension(name="customEvent:tool_name"),
-            ],
-            metrics=[
-                Metric(name="eventCount"),
-            ],
-        )
-        
-        response = client.run_report(request)
+        # Try with tool_name dimension first, fall back to eventName only
+        try:
+            request = RunReportRequest(
+                property=f"properties/{PROPERTY_ID}",
+                date_ranges=[DateRange(
+                    start_date=f"{days}daysAgo",
+                    end_date="today"
+                )],
+                dimensions=[
+                    Dimension(name="eventName"),
+                    Dimension(name="customEvent:tool_name"),
+                ],
+                metrics=[
+                    Metric(name="eventCount"),
+                ],
+            )
+            response = client.run_report(request)
+            has_tool_name = True
+        except Exception:
+            # tool_name not available, use eventName only
+            request = RunReportRequest(
+                property=f"properties/{PROPERTY_ID}",
+                date_ranges=[DateRange(
+                    start_date=f"{days}daysAgo",
+                    end_date="today"
+                )],
+                dimensions=[
+                    Dimension(name="eventName"),
+                ],
+                metrics=[
+                    Metric(name="eventCount"),
+                ],
+            )
+            response = client.run_report(request)
+            has_tool_name = False
         
         # Build funnel data
         funnels: Dict[str, Dict[str, int]] = {}
         
         for row in response.rows:
             event_name = row.dimension_values[0].value
-            tool_name = row.dimension_values[1].value or "unknown"
+            if has_tool_name:
+                tool_name = row.dimension_values[1].value or "unknown"
+            else:
+                tool_name = "all"
             count = int(row.metric_values[0].value)
             
             if tool_name not in funnels:
@@ -250,7 +294,8 @@ def pull_funnel(days: int = 30) -> Dict[str, Any]:
             "success": True,
             "period": f"last_{days}_days",
             "pulled_at": datetime.utcnow().isoformat() + "Z",
-            "funnels": funnels
+            "funnels": funnels,
+            "note": "tool_name dimension not configured - showing aggregate data" if not has_tool_name else None
         }
         
     except Exception as e:
