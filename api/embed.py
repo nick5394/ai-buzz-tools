@@ -92,7 +92,8 @@ async def get_embed_script():
   }}
   
   // Loading state HTML (matches widget aesthetic)
-  const loadingHTML = `
+  function getLoadingHTML(message) {{
+    return `
     <div style="
       max-width: 800px;
       margin: 20px auto;
@@ -114,7 +115,7 @@ async def get_embed_script():
         animation: spin 0.8s linear infinite;
         margin: 0 auto 12px;
       "></div>
-      <p style="margin: 0; font-size: 14px;">Loading tool...</p>
+      <p style="margin: 0; font-size: 14px;">${{message}}</p>
       <style>
         @keyframes spin {{
           to {{ transform: rotate(360deg); }}
@@ -122,6 +123,7 @@ async def get_embed_script():
       </style>
     </div>
   `;
+  }}
   
   // Error state HTML
   const errorHTML = `
@@ -142,12 +144,13 @@ async def get_embed_script():
   `;
   
   // Show loading state
-  container.innerHTML = loadingHTML;
+  container.innerHTML = getLoadingHTML('Loading tool...');
   
   // Fetch widget HTML
   const widgetUrl = '{api_base}' + widgetEndpoint;
   let retryCount = 0;
-  const maxRetries = 1;
+  const maxRetries = 3;
+  const retryDelays = [5000, 10000, 20000]; // Exponential backoff: 5s, 10s, 20s
   
   function fetchWidget() {{
     fetch(widgetUrl, {{
@@ -168,14 +171,16 @@ async def get_embed_script():
       container.innerHTML = html;
     }})
     .catch(function(error) {{
-      console.error('AI-Buzz embed: Failed to load widget', error);
+      console.error('AI-Buzz embed: Failed to load widget (attempt ' + (retryCount + 1) + ')', error);
       
-      // Retry once after 3 seconds (handles Render cold starts)
+      // Retry with exponential backoff (handles Render cold starts up to 35s)
       if (retryCount < maxRetries) {{
+        const delay = retryDelays[retryCount];
         retryCount++;
-        setTimeout(fetchWidget, 3000);
+        container.innerHTML = getLoadingHTML('Warming up... (attempt ' + retryCount + '/' + maxRetries + ')');
+        setTimeout(fetchWidget, delay);
       }} else {{
-        // Show error state
+        // Show error state after all retries exhausted
         container.innerHTML = errorHTML;
       }}
     }});

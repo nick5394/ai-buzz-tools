@@ -1,6 +1,6 @@
 # AI-Buzz Tools
 
-[![Tests](https://github.com/YOUR_USERNAME/ai-buzz-tools/actions/workflows/test.yml/badge.svg)](https://github.com/YOUR_USERNAME/ai-buzz-tools/actions/workflows/test.yml)
+[![Tests](https://github.com/nick5394/ai-buzz-tools/actions/workflows/test.yml/badge.svg)](https://github.com/nick5394/ai-buzz-tools/actions/workflows/test.yml)
 
 **Unified API for AI developer tools.**
 
@@ -245,6 +245,28 @@ The GitHub Actions workflow runs:
 - Coverage reports
 
 See [TESTING.md](TESTING.md) for comprehensive testing guide and checklist.
+
+## Deployment
+
+### Render Free Tier + Keep-Alive
+
+This API is deployed on Render's free tier, which has cold starts (10-30s) when the service goes idle. To prevent this:
+
+1. **Set up UptimeRobot** (free):
+   - Create account at [uptimerobot.com](https://uptimerobot.com)
+   - Add HTTP(s) monitor for `https://ai-buzz-tools.onrender.com/`
+   - Set interval to 5 minutes
+   - This keeps the service warm and alerts you if it goes down
+
+2. **Client-side retry logic**:
+   - The `embed.js` loader includes exponential backoff (5s, 10s, 20s)
+   - Shows "Warming up..." message during retries
+   - Handles cold starts up to 35 seconds gracefully
+
+**When to upgrade to paid Render ($7/month)**:
+- If you see consistent tool usage in GA4
+- If keep-alive pings aren't reliable enough
+- If cold start UX is unacceptable for your use case
 
 ## Development
 
