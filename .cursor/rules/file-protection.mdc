@@ -1,0 +1,92 @@
+---
+description: File protection tiers - STOP AND ASK before modifying critical files
+alwaysApply: true
+---
+
+# File Protection System
+
+## TIER 1: CRITICAL FILES — STOP AND ASK
+
+STOP. Before modifying ANY of these files, you MUST:
+
+1. State: "I need to modify [filename] because [reason]"
+2. WAIT for user confirmation
+3. DO NOT proceed without explicit approval
+
+This is not optional. This is a hard requirement.
+
+**Critical files:**
+
+- `main.py` — Application entry point, affects all tools
+- `api/shared.py` — Shared utilities used by every router
+- `requirements.txt` — Deployment dependencies
+- `Dockerfile` — Production container definition
+- `render.yaml` — Render deployment configuration
+- `tests/conftest.py` — Test infrastructure and fixtures
+- `.cursor/rules/*.mdc` — The rules themselves
+
+---
+
+## TIER 2: STABLE FILES — Follow Existing Patterns
+
+These files can be modified but MUST follow existing patterns exactly. No architectural changes without discussion.
+
+- `api/*.py` — Copy patterns from `error_decoder.py`
+- `data/*.json` — Maintain `_metadata` structure
+- `widgets/*.html` — Maintain CSS variables, self-contained structure
+- `tests/test_*.py` — Follow class-per-endpoint pattern
+
+---
+
+## TIER 3: STANDARD — Normal Development
+
+Can be modified following project conventions:
+
+- `scripts/*.py`, `scripts/*.sh`
+- `services/*.py`
+- `content/tools/*.md`
+
+---
+
+## TIER 4: FLEXIBLE — Safe to Modify
+
+Documentation and non-functional files:
+
+- `README.md`, `TESTING.md`, `WORDPRESS_SETUP.md`
+- `.gitignore`, `Makefile`
+- `.github/workflows/*`
+
+---
+
+## FILE CREATION BOUNDARIES
+
+**NEVER create new files in these locations without explicit user request:**
+
+- Root directory (`/`) — No new files
+- `api/` — No new routers
+- `data/` — No new data files
+- `widgets/` — No new widgets
+
+**Allowed locations (can create without asking):**
+
+- `tests/` — New test files following `test_*.py` naming
+- `scripts/` — New utility scripts
+- `docs/` — Documentation files
+
+If you need to create a file in a forbidden location, ASK FIRST.
+
+---
+
+## Examples
+
+**Requires confirmation:**
+
+- "I need to add a new dependency to requirements.txt"
+- "I need to modify api/shared.py to add a helper function"
+- "I need to update main.py to register a new router"
+
+**Does NOT require confirmation:**
+
+- Modifying `api/pricing.py` following existing patterns
+- Adding a new test file `tests/test_new_feature.py`
+- Updating `README.md`

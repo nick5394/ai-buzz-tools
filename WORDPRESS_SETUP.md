@@ -55,6 +55,7 @@ Run the sync script:
 ```
 
 This will:
+
 1. Back up existing WordPress pages to `content/wordpress-backup/`
 2. Push all three content templates to WordPress
 3. Update SEO meta via AIOSEO
@@ -156,7 +157,10 @@ The loader script (`embed.js`) is cached by WordPress (since it never changes), 
 3. Paste this code:
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 4. Publish/Update the page
@@ -168,14 +172,18 @@ The loader script (`embed.js`) is cached by WordPress (since it never changes), 
 3. Paste the script tag where you want the widget to appear:
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 4. Update the page
 
 **Available tools:**
+
 - `pricing` - AI Pricing Calculator
-- `status` - AI Status Page  
+- `status` - AI Status Page
 - `error-decoder` - AI Error Decoder
 
 ### Alternative: Bricks Builder
@@ -183,14 +191,18 @@ The loader script (`embed.js`) is cached by WordPress (since it never changes), 
 If you're using Bricks Builder, add a **Code element** with the same script tag:
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 ### Why JavaScript Instead of PHP?
 
 WordPress aggressively caches page content to serve static HTML fast. The old PHP approach (`file_get_contents()`) fetched widget HTML at page-render time, which then got cached. When widgets were updated, WordPress served stale cached content until cache was manually cleared.
 
-The JavaScript approach works *with* WordPress caching:
+The JavaScript approach works _with_ WordPress caching:
+
 - The static script tag gets cached (which is fine - it never changes)
 - Widget content loads fresh every time via client-side fetch
 - No cache clearing needed - updates appear immediately
@@ -198,10 +210,14 @@ The JavaScript approach works *with* WordPress caching:
 ### Example: Error Decoder Widget
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 The loader automatically:
+
 1. Creates a container div
 2. Shows a loading state (spinner)
 3. Fetches widget HTML from the API
@@ -213,24 +229,36 @@ The loader automatically:
 You can embed multiple widgets on the same page - each script tag works independently:
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="pricing"></script>
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="status"></script>
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="pricing"
+></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="status"
+></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 ### Troubleshooting Widget Issues
 
 **Widget shows "Loading tool..." but never loads:**
+
 - Check browser console for JavaScript errors
 - Verify API is accessible: `curl https://ai-buzz-tools.onrender.com/embed.js`
 - Check that `data-tool` attribute matches a valid tool name
 
 **Widget shows "Tool temporarily unavailable":**
+
 - API may be experiencing a cold start (Render free tier)
 - Widget will retry automatically after 3 seconds
 - If it persists, check API status: `curl https://ai-buzz-tools.onrender.com/`
 
 **Widget doesn't appear at all:**
+
 - Check that script tag syntax is correct (no typos)
 - Verify you're in Text mode (Classic Editor) or HTML block (Block Editor), not Visual mode
 - Some security plugins block script tags - check if you have one installed

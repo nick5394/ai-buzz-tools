@@ -13,7 +13,7 @@ widget_endpoint: "/[tool-path]/widget"
 
 <script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="[tool-slug]"></script>
 
-<!-- 
+<!--
 WIDGET EMBED CODE:
 
 The script tag above embeds the widget. Replace [tool-slug] with:

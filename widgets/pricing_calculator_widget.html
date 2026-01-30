@@ -828,6 +828,7 @@
           <input type="email" class="pcw-email-input" id="pcw-email-input" placeholder="your@email.com" aria-label="Email address" />
           <button class="pcw-email-btn" id="pcw-email-btn">Subscribe</button>
         </div>
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin: 8px 0 0 0;">No spam. Unsubscribe anytime.</p>
         <div class="pcw-email-error" id="pcw-email-error"></div>
         <div class="pcw-email-success" id="pcw-email-success">
           You're subscribed! We'll notify you when prices change.
@@ -851,7 +852,7 @@
   "use strict";
 
   // Configuration
-  const API_BASE = "https://ai-buzz-api-pricing-calculator-wp-widget.onrender.com";
+  const API_BASE = window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
   const CALCULATE_ENDPOINT = `${API_BASE}/pricing/calculate`;
 
   // Provider pricing page URLs
@@ -892,6 +893,13 @@
   const emailSuccessEl = document.getElementById("pcw-email-success");
   const emailErrorEl = document.getElementById("pcw-email-error");
   const filterChipsEl = document.getElementById("pcw-filter-chips");
+
+  // GA4 Event Tracking Helper
+  function trackEvent(eventName, params = {}) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', eventName, params);
+    }
+  }
 
   // State
   let allResults = [];
@@ -1003,6 +1011,7 @@
         updateShareUrl(inputTokensActual, outputTokensActual);
         hideLoading();
         showResults();
+        trackEvent('tool_used', { tool_name: 'pricing_calculator', action: 'calculate' });
       } else {
         throw new Error("Calculation failed");
       }
@@ -1194,6 +1203,7 @@
     navigator.clipboard.writeText(shareUrlEl.value).then(() => {
       copyBtnEl.textContent = "Copied!";
       setTimeout(() => { copyBtnEl.textContent = "Copy"; }, 2000);
+      trackEvent('share_created', { tool_name: 'pricing_calculator' });
     }).catch(() => {
       document.execCommand("copy");
       copyBtnEl.textContent = "Copied!";
@@ -1233,6 +1243,7 @@
         // Show success state
         emailFormEl.style.display = "none";
         emailSuccessEl.classList.add("visible");
+        trackEvent('email_signup', { tool_name: 'pricing_calculator' });
       } else {
         showEmailError(data.detail || "Subscription failed. Please try again.");
         emailBtnEl.disabled = false;

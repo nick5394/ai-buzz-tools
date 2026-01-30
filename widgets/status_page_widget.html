@@ -632,6 +632,7 @@
         <input type="email" class="spw-email-input" id="spw-email-input" placeholder="your@email.com" aria-label="Email address" />
         <button class="spw-email-btn" id="spw-email-btn">Subscribe</button>
       </div>
+      <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin: 8px 0 0 0;">No spam. Unsubscribe anytime.</p>
       <div class="spw-email-error" id="spw-email-error"></div>
       <div class="spw-email-success" id="spw-email-success">
         You're subscribed! We'll notify you when APIs go down.
@@ -654,7 +655,7 @@
   "use strict";
 
   // Configuration
-  const API_BASE = "https://ai-buzz-tools.onrender.com";
+  const API_BASE = window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
   const STATUS_ENDPOINT = `${API_BASE}/status/check`;
   const SUBSCRIBE_ENDPOINT = `${API_BASE}/status/alerts/subscribe`;
   const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
@@ -681,6 +682,13 @@
   const emailFormEl = document.getElementById("spw-email-form");
   const emailSuccessEl = document.getElementById("spw-email-success");
   const emailErrorEl = document.getElementById("spw-email-error");
+
+  // GA4 Event Tracking Helper
+  function trackEvent(eventName, params = {}) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', eventName, params);
+    }
+  }
 
   // State
   let autoRefreshTimer = null;
@@ -725,6 +733,7 @@
         hideLoading();
         hideError();
         showContent();
+        trackEvent('tool_used', { tool_name: 'status_page', action: 'check' });
       } else {
         throw new Error("Failed to fetch status");
       }
@@ -816,6 +825,7 @@
     navigator.clipboard.writeText(shareUrlEl.value).then(() => {
       copyBtnEl.textContent = "Copied!";
       setTimeout(() => { copyBtnEl.textContent = "Copy"; }, 2000);
+      trackEvent('share_created', { tool_name: 'status_page' });
     }).catch(() => {
       document.execCommand("copy");
       copyBtnEl.textContent = "Copied!";
@@ -852,6 +862,7 @@
       if (response.ok && data.success) {
         emailFormEl.style.display = "none";
         emailSuccessEl.classList.add("visible");
+        trackEvent('email_signup', { tool_name: 'status_page' });
       } else {
         showEmailError(data.detail || "Subscription failed. Please try again.");
         emailBtnEl.disabled = false;

@@ -1,0 +1,82 @@
+---
+description: Testing checklist - applies when working on test files
+globs:
+  - tests/**
+  - pytest.ini
+  - "**/test_*.py"
+alwaysApply: false
+---
+
+# Testing Checklist
+
+This checklist applies when creating or modifying tests.
+
+## Pre-Development
+
+- [ ] Data file created with `_metadata` section
+- [ ] API router created following existing patterns
+- [ ] Pydantic models defined for request/response
+
+## Required Endpoints
+
+- [ ] Main functionality endpoint (POST + GET versions)
+- [ ] Data listing endpoint (`/patterns`, `/models`, or `/providers`)
+- [ ] Email subscription endpoint (`/alerts/subscribe`)
+- [ ] Widget endpoint (`/widget`)
+
+## Widget Requirements
+
+- [ ] Self-contained (CSS + JS inline)
+- [ ] Mobile responsive (test at 375px)
+- [ ] Share URLs point to `ai-buzz.com`
+- [ ] Matches existing widget style
+
+## Testing Requirements
+
+- [ ] Unit tests written (`tests/test_{tool}.py`)
+- [ ] Widget integration tests written
+- [ ] All tests pass: `pytest`
+- [ ] Manual testing on localhost
+
+## Quick Commands
+
+```bash
+# Run tests for a specific tool
+pytest tests/test_{tool}.py -v
+
+# Run widget integration tests
+pytest tests/test_widget_integration.py -v
+
+# Run with visible browser (debugging)
+pytest tests/test_widget_integration.py --headed
+
+# Start server for manual testing
+uvicorn main:app --reload
+```
+
+## Test Structure Pattern
+
+```python
+class Test{ToolName}Main:
+    """Test main functionality endpoint."""
+
+class Test{ToolName}Data:
+    """Test data listing endpoint."""
+
+class Test{ToolName}Subscribe:
+    """Test email subscription."""
+
+class Test{ToolName}Widget:
+    """Test widget endpoint."""
+```
+
+## Common Fixtures
+
+Available in `tests/conftest.py`:
+
+- `client` - FastAPI test client
+- `browser` - Playwright browser (session-scoped)
+- `page` - Playwright page (function-scoped)
+- `test_server` - Local server on port 8765
+
+For detailed debugging, troubleshooting, and Playwright patterns, see `TESTING.md`.

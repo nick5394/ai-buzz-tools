@@ -17,14 +17,23 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest -v
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium --with-deps
 
-      - name: Run tests with coverage
-        run: pytest --cov=api --cov-report=term-missing
+      - name: Run all tests with coverage
+        run: pytest -v --cov=api --cov-report=term-missing --cov-report=html --cov-fail-under=80 -n auto
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/

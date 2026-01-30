@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 # Cache for JSON data files (loaded once at startup)
 _data_cache: Dict[str, Any] = {}
 
+# Cache for widget HTML files (loaded once at startup)
+_widget_cache: Dict[str, str] = {}
+
 
 def load_json_data(filename: str) -> Dict[str, Any]:
     """
@@ -161,12 +164,14 @@ def format_date(date_str: str) -> str:
         return date_str
 
 
-def load_widget(filename: str) -> str:
+def load_widget(filename: str, use_cache: bool = True) -> str:
     """
     Load widget HTML file from widgets/ directory.
+    Caches the widget in memory for performance.
     
     Args:
         filename: Name of HTML file in widgets/ directory (e.g., "pricing_calculator_widget.html")
+        use_cache: Whether to use cached version (default True, set False for development)
     
     Returns:
         Widget HTML content as string
@@ -174,6 +179,32 @@ def load_widget(filename: str) -> str:
     Raises:
         FileNotFoundError: If widget file doesn't exist
     """
+    global _widget_cache
+    
+    if use_cache and filename in _widget_cache:
+        return _widget_cache[filename]
+    
     widget_path = os.path.join(os.path.dirname(__file__), "..", "widgets", filename)
     with open(widget_path, "r", encoding="utf-8") as f:
-        return f.read()
+        content = f.read()
+    
+    if use_cache:
+        _widget_cache[filename] = content
+        logger.info(f"Loaded {filename} successfully")
+    
+    return content
+
+
+def get_metadata_value(data: Dict[str, Any], key: str, default: str = "unknown") -> str:
+    """
+    Safely get a value from a data file's _metadata section.
+    
+    Args:
+        data: The loaded JSON data dictionary
+        key: The metadata key to retrieve (e.g., "last_updated")
+        default: Default value if key not found
+    
+    Returns:
+        The metadata value or default
+    """
+    return data.get("_metadata", {}).get(key, default)

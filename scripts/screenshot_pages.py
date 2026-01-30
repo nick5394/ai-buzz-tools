@@ -27,185 +27,102 @@ PAGES = {
     "ai-pricing-calculator": "https://www.ai-buzz.com/ai-pricing-calculator",
     "ai-status": "https://www.ai-buzz.com/ai-status",
     "ai-error-decoder": "https://www.ai-buzz.com/ai-error-decoder",
+    "ai-openai-errors": "https://www.ai-buzz.com/ai-openai-errors",
+    "ai-openai-vs-anthropic-pricing": "https://www.ai-buzz.com/ai-openai-vs-anthropic-pricing",
+    "ai-is-openai-down": "https://www.ai-buzz.com/ai-is-openai-down",
+    "ai-tools": "https://www.ai-buzz.com/ai-tools",
 }
 
 SCREENSHOT_DIR = Path("screenshots")
 
 
 async def wait_for_widgets(page, slug: str):
-    """Wait for widgets to fully load using improved strategy.
+    """Wait for widgets to fully load using optimized strategy.
     
     Args:
         page: Playwright page object
         slug: Page slug to determine which widget to wait for
     """
-    # 1. Wait for network idle (already done by goto, but ensure)
-    try:
-        await page.wait_for_load_state("networkidle", timeout=10000)
-    except:
-        pass  # May already be idle
-    
-    # 2. Wait for widget container (tool-specific selectors with longer timeout for cold starts)
+    # Widget-specific selectors (optimized - try most specific first)
     widget_selectors = {
-        "ai-pricing-calculator": ["#pricing-calculator-widget", "#pcw-calculate-btn"],
-        "ai-status": ["#status-page-widget", ".spw-provider-card"],
-        "ai-error-decoder": ["#error-decoder-widget", "#edw-error-textarea"],
+        "ai-pricing-calculator": "#pricing-calculator-widget",
+        "ai-status": "#status-page-widget",
+        "ai-error-decoder": "#error-decoder-widget",
+        "ai-openai-errors": "#error-decoder-widget",
+        "ai-openai-vs-anthropic-pricing": "#pricing-calculator-widget",
+        "ai-is-openai-down": "#status-page-widget",
+        "ai-tools": None,  # Landing page, no widget
     }
     
-    # Try slug-specific selectors first, then fallback to generic
-    selectors_to_try = widget_selectors.get(slug, []) + [
-        "#pricing-calculator-widget",
-        "#status-page-widget", 
-        "#error-decoder-widget",
-        "[id*='widget']",
-        "[class*='widget']",
-    ]
+    selector = widget_selectors.get(slug)
+    if not selector:
+        # No widget to wait for
+        await page.wait_for_timeout(1000)  # Brief pause for page render
+        return
     
-    widget_found = False
-    for selector in selectors_to_try:
-        try:
-            # Longer timeout to handle Render cold starts (up to 30s)
-            await page.wait_for_selector(selector, timeout=35000)
-            widget_found = True
-            print(f"    ✓ Found widget: {selector}")
-            break
-        except:
-            continue  # Try next selector
+    # Wait for widget container (25s timeout - covers cold starts without being excessive)
+    try:
+        await page.wait_for_selector(selector, timeout=25000, state="attached")
+        print(f"    ✓ Widget loaded: {selector}")
+        # Brief pause for widget to initialize
+        await page.wait_for_timeout(1500)
+    except Exception as e:
+        print(f"    ⚠ Widget may not be loaded: {e}")
+        # Continue anyway - widget might still render
     
-    if not widget_found:
-        print(f"    ⚠ Widget container not found (may still be loading)")
-    
-    # 3. Scroll to bottom (trigger lazy loading)
-    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-    await page.wait_for_timeout(1000)  # Brief pause after scroll
-    
-    # 4. Additional wait for any async widget loading (PHP file_get_contents + Render cold start)
-    await page.wait_for_timeout(5000)  # Give extra time for widget HTML to load
+    # Scroll to ensure widget is in viewport
+    try:
+        await page.evaluate(f"document.querySelector('{selector}')?.scrollIntoView({{behavior: 'instant', block: 'center'}})")
+        await page.wait_for_timeout(500)
+    except:
+        pass
 
 
 async def interact_with_widget(page, slug: str):
-    """Interact with widget to show active state before capturing.
+    """Interact with widget to show active state before capturing (optimized - faster).
     
     Args:
         page: Playwright page object
         slug: Page slug to determine which widget interaction to perform
     """
-    print(f"  Interacting with {slug} widget...")
+    # Skip interaction for landing page
+    if slug == "ai-tools":
+        await page.wait_for_timeout(500)
+        return
     
     try:
-        if slug == "ai-pricing-calculator":
-            # Wait for pricing calculator widget to be visible (longer timeout for cold starts)
-            try:
-                await page.wait_for_selector("#pricing-calculator-widget", timeout=35000)
-            except:
-                # Try alternative selectors
-                try:
-                    await page.wait_for_selector("#pcw-calculate-btn", timeout=10000)
-                except:
-                    print("    ⚠ Widget may not be fully loaded")
-            
-            # Scroll widget into view
-            await page.evaluate("document.getElementById('pricing-calculator-widget')?.scrollIntoView({behavior: 'smooth', block: 'center'})")
-            await page.wait_for_timeout(1000)
-            
-            # Click "Calculate Costs" button
+        # Quick interactions - just verify widget is functional, don't wait for full results
+        if slug in ("ai-pricing-calculator", "ai-openai-vs-anthropic-pricing"):
             calculate_btn = page.locator("#pcw-calculate-btn")
-            if await calculate_btn.is_visible():
+            if await calculate_btn.is_visible(timeout=3000):
                 await calculate_btn.click()
-                print("    ✓ Clicked 'Calculate Costs' button")
-                
-                # Wait for results to appear (either results section or error)
-                try:
-                    # Wait for results table or cards to appear
-                    await page.wait_for_selector("#pcw-results.visible, #pcw-results-table, #pcw-results-cards", timeout=30000)
-                    print("    ✓ Results loaded")
-                except:
-                    # Check if error appeared instead
-                    error_visible = await page.locator("#pcw-error.visible").is_visible()
-                    if error_visible:
-                        print("    ⚠ Error message displayed (widget still functional)")
-                    else:
-                        print("    ⚠ Results may not have loaded (continuing anyway)")
-                
-                # Wait a bit more for any animations/rendering
-                await page.wait_for_timeout(2000)
-            else:
-                print("    ⚠ Calculate button not found")
+                print("    ✓ Triggered calculation")
+                # Brief wait for API call to start (don't wait for full results)
+                await page.wait_for_timeout(1500)
         
-        elif slug == "ai-status":
-            # Status page auto-refreshes, just wait for status cards (longer timeout for cold starts)
-            try:
-                await page.wait_for_selector("#status-page-widget", timeout=35000)
-            except:
-                # Try alternative selectors
-                try:
-                    await page.wait_for_selector(".spw-provider-card", timeout=10000)
-                except:
-                    print("    ⚠ Widget may not be fully loaded")
-            
-            # Scroll widget into view
-            await page.evaluate("document.getElementById('status-page-widget')?.scrollIntoView({behavior: 'smooth', block: 'center'})")
-            await page.wait_for_timeout(1000)
-            
-            # Wait for provider status cards to appear
-            try:
-                await page.wait_for_selector(".spw-provider-card, .spw-status-card", timeout=30000)
-                print("    ✓ Status cards loaded")
-            except:
-                print("    ⚠ Status cards may not have loaded (continuing anyway)")
-            
-            # Wait for any auto-refresh to complete
-            await page.wait_for_timeout(3000)
-        
-        elif slug == "ai-error-decoder":
-            # Wait for error decoder widget to be visible (longer timeout for cold starts)
-            try:
-                await page.wait_for_selector("#error-decoder-widget", timeout=35000)
-            except:
-                # Try alternative selectors
-                try:
-                    await page.wait_for_selector("#edw-error-textarea", timeout=10000)
-                except:
-                    print("    ⚠ Widget may not be fully loaded")
-            
-            # Scroll widget into view
-            await page.evaluate("document.getElementById('error-decoder-widget')?.scrollIntoView({behavior: 'smooth', block: 'center'})")
-            await page.wait_for_timeout(1000)
-            
-            # Enter a test error message
+        elif slug in ("ai-error-decoder", "ai-openai-errors"):
             textarea = page.locator("#edw-error-textarea")
-            if await textarea.is_visible():
+            if await textarea.is_visible(timeout=3000):
                 await textarea.fill("rate limit exceeded")
-                print("    ✓ Entered test error message")
-                
-                # Click decode button
                 decode_btn = page.locator("#edw-decode-btn")
-                if await decode_btn.is_visible():
+                if await decode_btn.is_visible(timeout=2000):
                     await decode_btn.click()
-                    print("    ✓ Clicked 'Decode Error' button")
-                    
-                    # Wait for explanation to appear
-                    try:
-                        await page.wait_for_selector("#edw-explanation.visible, .edw-explanation-section.visible", timeout=30000)
-                        print("    ✓ Explanation loaded")
-                    except:
-                        # Check if error appeared instead
-                        error_visible = await page.locator("#edw-error.visible").is_visible()
-                        if error_visible:
-                            print("    ⚠ Error message displayed (widget still functional)")
-                        else:
-                            print("    ⚠ Explanation may not have loaded (continuing anyway)")
-                    
-                    # Wait a bit more for any animations/rendering
-                    await page.wait_for_timeout(2000)
-                else:
-                    print("    ⚠ Decode button not found")
-            else:
-                print("    ⚠ Textarea not found")
+                    print("    ✓ Triggered decode")
+                    # Brief wait for API call to start
+                    await page.wait_for_timeout(1500)
+        
+        elif slug in ("ai-status", "ai-is-openai-down"):
+            # Status page auto-loads, just wait briefly for cards
+            try:
+                await page.wait_for_selector(".spw-provider-card", timeout=5000, state="attached")
+                print("    ✓ Status cards visible")
+            except:
+                pass
+            await page.wait_for_timeout(1000)
         
     except Exception as e:
-        print(f"    ⚠ Interaction error (continuing anyway): {e}")
         # Continue anyway - widget might still be visible
+        pass
 
 
 async def capture_page(
@@ -213,7 +130,8 @@ async def capture_page(
     slug: str,
     output_dir: Path,
     format: str = "pdf",
-    mobile: bool = False
+    mobile: bool = False,
+    browser = None
 ) -> Tuple[bool, List[Path]]:
     """Capture page as PDF or PNG with optional mobile viewport.
     
@@ -223,80 +141,104 @@ async def capture_page(
         output_dir: Directory to save output
         format: "pdf", "png", or "both"
         mobile: If True, use mobile viewport (375x667)
+        browser: Optional browser instance to reuse
     
     Returns:
         Tuple of (success: bool, output_paths: List[Path])
     """
-    async with async_playwright() as p:
-        viewport = {"width": 375, "height": 667} if mobile else {"width": 1920, "height": 1080}
-        suffix = "-mobile" if mobile else "-desktop"
-        viewport_label = "mobile" if mobile else "desktop"
+    viewport = {"width": 375, "height": 667} if mobile else {"width": 1920, "height": 1080}
+    suffix = "-mobile" if mobile else "-desktop"
+    viewport_label = "mobile" if mobile else "desktop"
+    
+    print(f"📸 Capturing {slug} ({viewport_label})...")
+    
+    # Reuse browser if provided, otherwise create new one
+    if browser is None:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            return await _capture_with_browser(browser, url, slug, output_dir, format, mobile, suffix, viewport)
+    else:
+        return await _capture_with_browser(browser, url, slug, output_dir, format, mobile, suffix, viewport)
+
+
+async def _capture_with_browser(
+    browser,
+    url: str,
+    slug: str,
+    output_dir: Path,
+    format: str,
+    mobile: bool,
+    suffix: str,
+    viewport: dict
+) -> Tuple[bool, List[Path]]:
+    """Internal helper to capture page with an existing browser."""
+    context = await browser.new_context(
+        viewport=viewport,
+        device_scale_factor=2 if not mobile else 1,
+    )
+    page = await context.new_page()
+    
+    output_paths = []
+    
+    try:
+        # Navigate to page (optimized - use domcontentloaded for faster initial load)
+        print(f"  Loading {url}...")
+        await page.goto(url, wait_until="domcontentloaded", timeout=40000)
         
-        print(f"📸 Capturing {slug} ({viewport_label})...")
+        # Wait for widgets to load (optimized strategy)
+        await wait_for_widgets(page, slug)
         
-        # Launch browser
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            viewport=viewport,
-            device_scale_factor=2 if not mobile else 1,  # Higher quality for desktop
-        )
-        page = await context.new_page()
+        # Quick interaction to show active state (optional, fast)
+        await interact_with_widget(page, slug)
         
-        output_paths = []
+        # Capture based on format
+        if format in ("pdf", "both"):
+            pdf_path = output_dir / f"{slug}{suffix}.pdf"
+            await page.pdf(
+                path=str(pdf_path),
+                format="A4",
+                print_background=True,
+                margin={"top": "0.5cm", "right": "0.5cm", "bottom": "0.5cm", "left": "0.5cm"}
+            )
+            output_paths.append(pdf_path)
+            print(f"  ✓ PDF saved to {pdf_path}")
         
-        try:
-            # Navigate to page
-            print(f"  Loading {url}...")
-            await page.goto(url, wait_until="networkidle", timeout=60000)  # Longer timeout for cold starts
-            
-            # Wait for widgets to load (with slug-specific strategy)
-            await wait_for_widgets(page, slug)
-            
-            # Interact with widget to show active state
-            await interact_with_widget(page, slug)
-            
-            # Capture based on format
-            if format in ("pdf", "both"):
-                pdf_path = output_dir / f"{slug}{suffix}.pdf"
-                await page.pdf(
-                    path=str(pdf_path),
-                    format="A4",
-                    print_background=True,
-                    margin={"top": "0.5cm", "right": "0.5cm", "bottom": "0.5cm", "left": "0.5cm"}
-                )
-                output_paths.append(pdf_path)
-                print(f"  ✓ PDF saved to {pdf_path}")
-            
-            if format in ("png", "both"):
-                png_path = output_dir / f"{slug}{suffix}.png"
-                await page.screenshot(
-                    path=str(png_path),
-                    full_page=True,
-                    animations="disabled"
-                )
-                output_paths.append(png_path)
-                print(f"  ✓ PNG saved to {png_path}")
-            
-            return True, output_paths
-            
-        except Exception as e:
-            print(f"  ✗ Error: {e}")
-            return False, output_paths
-        finally:
-            await browser.close()
+        if format in ("png", "both"):
+            png_path = output_dir / f"{slug}{suffix}.png"
+            await page.screenshot(
+                path=str(png_path),
+                full_page=True,
+                animations="disabled"
+            )
+            output_paths.append(png_path)
+            print(f"  ✓ PNG saved to {png_path}")
+        
+        return True, output_paths
+        
+    except Exception as e:
+        print(f"  ✗ Error: {e}")
+        return False, output_paths
+    finally:
+        await context.close()
 
 
 async def capture_all(format: str = "pdf", mobile: bool = False):
-    """Capture all pages."""
+    """Capture all pages (optimized - reuses browser)."""
     SCREENSHOT_DIR.mkdir(exist_ok=True)
     
     print("=== WordPress Page Verification ===\n")
     
-    results = []
-    for slug, url in PAGES.items():
-        success, paths = await capture_page(url, slug, SCREENSHOT_DIR, format, mobile)
-        results.append((slug, success, paths))
-        print()
+    # Reuse browser across all pages for faster execution
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        
+        results = []
+        for slug, url in PAGES.items():
+            success, paths = await capture_page(url, slug, SCREENSHOT_DIR, format, mobile, browser)
+            results.append((slug, success, paths))
+            print()
+        
+        await browser.close()
     
     # Summary
     print("=== Summary ===")
@@ -328,7 +270,7 @@ async def capture_one(slug: str, format: str = "pdf", mobile: bool = False):
     SCREENSHOT_DIR.mkdir(exist_ok=True)
     url = PAGES[slug]
     
-    success, paths = await capture_page(url, slug, SCREENSHOT_DIR, format, mobile)
+    success, paths = await capture_page(url, slug, SCREENSHOT_DIR, format, mobile, browser=None)
     return 0 if success else 1
 
 

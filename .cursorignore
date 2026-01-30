@@ -1,0 +1,72 @@
+# Cursor Ignore File
+# Excludes files from AI context to reduce noise and improve response quality
+
+# =============================================================================
+# BUILD ARTIFACTS & CACHES
+# =============================================================================
+# Python bytecode - never useful for AI context
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test caches and coverage reports
+.pytest_cache/
+htmlcov/
+.coverage
+.tox/
+
+# Type checking caches
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# =============================================================================
+# BINARY & GENERATED FILES
+# =============================================================================
+# Screenshots - binary images not useful for code context
+screenshots/
+
+# =============================================================================
+# ENVIRONMENT & SECRETS
+# =============================================================================
+# Environment files - sensitive and not useful for code understanding
+.env
+.env.*
+env.example
+
+# Virtual environments - huge, never useful
+venv/
+.venv/
+env/
+ENV/
+
+# =============================================================================
+# GIT INTERNALS
+# =============================================================================
+.git/
+
+# =============================================================================
+# DEPLOYMENT & CI CONFIG
+# =============================================================================
+# Rarely needed in AI context - deployment specifics
+.github/
+Dockerfile
+render.yaml
+
+# =============================================================================
+# OTHER NOISE
+# =============================================================================
+# Logs and databases
+*.log
+*.db
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor artifacts
+*.swp
+*.swo
+*~

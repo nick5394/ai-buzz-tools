@@ -1,142 +1,73 @@
 # Testing Guide
 
-This document describes the testing framework and checklist for AI-Buzz Tools.
+This document describes the testing framework for AI-Buzz Tools.
 
 ## Quick Start
 
 ```bash
-# Install dependencies (if not already installed)
+# Install dependencies
 pip install -r requirements.txt
 
-# Install pre-push hook (required before first push)
+# Install pre-push hook (one-time setup)
 ./scripts/install-hooks.sh
 
 # Run all tests
 pytest
 
-# Run tests for a specific tool
+# Run with coverage (for CI or when you want it)
+pytest --cov=api --cov-report=html --cov-fail-under=80
+```
+
+## Running Tests
+
+### Primary Methods
+
+```bash
+# Run all tests
+pytest
+
+# Run specific tool tests
 pytest tests/test_error_decoder.py -v
 
-# Start server for manual testing
-uvicorn main:app --reload
+# Run widget integration tests only
+pytest tests/test_widget_integration.py -v
 
-# Test a tool with the test script
-./scripts/test_tool.sh error-decoder
+# Run with visible browser (debugging)
+pytest tests/test_widget_integration.py --headed
+
+# Stop on first failure
+pytest -x
+```
+
+### Using Make
+
+```bash
+make test          # All tests
+make test-unit     # Unit tests only (parallel)
+make test-widget   # Widget integration tests only
+make coverage      # Generate coverage report
 ```
 
 ## Pre-Push Hook
 
-**Required:** Before pushing to `main`, you must install the pre-push hook. This ensures tests pass and changed tools work on localhost before code reaches the repository.
-
-### Installation
+The pre-push hook runs `pytest` before every push to `main`. Install it once:
 
 ```bash
-# Install the hook (one-time setup)
 ./scripts/install-hooks.sh
 ```
 
-This installs a git hook that automatically runs before every push to `main`.
+**Bypass (emergencies only):** `git push --no-verify`
 
-**Verification:**
-After installation, verify the hook is in place:
-
-```bash
-ls -la .git/hooks/pre-push
-# Should show executable file
-```
-
-### What the Hook Does
-
-The pre-push hook performs two checks:
-
-1. **Unit Tests** - Runs `pytest` to verify all unit tests pass
-2. **Localhost Verification** - For changed tools, spins up a local server and tests endpoints:
-   - Health check endpoint
-   - Widget endpoint
-   - Data endpoints (patterns/models/providers)
-   - Main functionality endpoint
-
-### Tool Detection
-
-The hook automatically detects which tools changed by analyzing modified files:
-
-- Changes to `api/pricing.py`, `widgets/pricing_*.html`, or `data/pricing_*.json` → tests `pricing`
-- Changes to `api/status.py`, `widgets/status_*.html`, or `data/status_*.json` → tests `status`
-- Changes to `api/error_decoder.py`, `widgets/error_decoder_*.html`, or `data/error_patterns.json` → tests `error-decoder`
-- Changes to `main.py`, `api/shared.py`, or `requirements.txt` → tests all tools
-
-### Bypassing the Hook
-
-In emergency situations (e.g., hotfix), you can bypass the hook:
-
-```bash
-git push --no-verify
-```
-
-**Warning:** CI will still run and block the merge if tests fail. Use sparingly.
-
-### Troubleshooting
-
-**Hook blocks push but tests pass locally:**
-
-- Make sure you're in the project root directory
-- Check that dependencies are installed: `pip install -r requirements.txt`
-- Verify pytest works: `pytest -v`
-
-**Server fails to start in hook:**
-
-- Check if port 8001-8100 is available: `lsof -i :8001`
-- Kill any existing uvicorn processes: `pkill -f uvicorn`
-- Check server logs: `tail -20 /tmp/pre-push-server.log`
-
-**Hook not running:**
-
-- Verify hook is installed: `ls -la .git/hooks/pre-push`
-- Reinstall: `./scripts/install-hooks.sh`
-- Check hook is executable: `chmod +x .git/hooks/pre-push`
-
-## Testing Checklist
-
-Every tool MUST pass the complete checklist in `.cursor/rules/ai-buzz-tools.mdc` before being considered complete.
-
-### Quick Verification
-
-1. **Run Automated Tests**
-
-   ```bash
-   pytest tests/test_{tool_name}.py -v
-   ```
-
-2. **Start Server and Test Manually**
-
-   ```bash
-   uvicorn main:app --reload
-   ```
-
-   Then test endpoints:
-   - `http://localhost:8000/{tool}/patterns` (or `/models`, `/providers`)
-   - `http://localhost:8000/{tool}/widget`
-   - POST to main endpoint with sample data
-
-3. **Test Widget in Browser**
-   - Open `http://localhost:8000/{tool}/widget`
-   - Test main functionality
-   - Test share URL generation
-   - Test email subscription
-   - Test mobile responsive (Chrome DevTools → 375px)
-
-4. **Verify Share URLs**
-   - Generate share URL
-   - Verify it points to `https://www.ai-buzz.com/...` (NOT localhost/Render)
-   - Test that URL parameters work
+CI will still run and block merge if tests fail.
 
 ## Test Structure
 
-### Test File Naming
+### File Naming
 
-- `tests/test_{tool_name}.py` (e.g., `test_error_decoder.py`)
+- `tests/test_{tool_name}.py` - Unit tests for each tool
+- `tests/test_widget_integration.py` - Playwright browser tests
 
-### Test Class Structure
+### Class Structure
 
 ```python
 class Test{ToolName}Main:
@@ -150,125 +81,105 @@ class Test{ToolName}Subscribe:
 
 class Test{ToolName}Widget:
     """Test widget endpoint."""
-
-class Test{ToolName}Integration:
-    """Integration tests."""
 ```
 
-### Example Test
-
-See `tests/test_error_decoder.py` for a complete example.
-
-## Common Test Patterns
-
-### Testing Success Cases
-
-```python
-def test_success_case(self, client):
-    response = client.post("/tool/endpoint", json={"key": "value"})
-    assert response.status_code == 200
-    data = response.json()
-    assert data["success"] is True
-```
-
-### Testing Error Cases
-
-```python
-def test_invalid_input(self, client):
-    response = client.post("/tool/endpoint", json={"key": ""})
-    assert response.status_code == 422  # Validation error
-```
-
-### Testing Widget
-
-```python
-def test_get_widget(self, client):
-    response = client.get("/tool/widget")
-    assert response.status_code == 200
-    assert "widget" in response.text.lower()
-    assert "<style>" in response.text  # Self-contained
-    assert "<script>" in response.text  # Self-contained
-```
-
-## Fixtures
-
-Common fixtures are available in `tests/conftest.py`:
+### Fixtures (in `tests/conftest.py`)
 
 - `client` - FastAPI test client
-- Tool-specific sample data fixtures
+- `browser` - Playwright browser (session-scoped)
+- `page` - Playwright page (function-scoped)
+- `test_server` - Local server on port 8765
 
-## Running Tests
+## Widget Integration Tests
 
-```bash
-# All tests
-pytest
+Browser-based tests using Playwright. Test that widgets load, interactions work, and API calls succeed.
 
-# Specific test file
-pytest tests/test_error_decoder.py
+### Key Pattern
 
-# Specific test
-pytest tests/test_error_decoder.py::TestErrorDecoderDecode::test_decode_rate_limit_error
+```python
+@pytest.mark.asyncio
+async def test_widget_action(self, page: Page, test_server):
+    await load_widget(page, "widget-name", test_server)
 
-# With coverage
-pytest --cov=api --cov-report=html
+    # Wait for API response when clicking
+    async with page.expect_response(lambda r: "/api/endpoint" in r.url):
+        await page.locator("#button").click()
 
-# Verbose output
-pytest -v
-
-# Stop on first failure
-pytest -x
+    # Assert result
+    await page.locator("#result").wait_for(state="visible", timeout=5000)
+    assert await page.locator("#result").is_visible()
 ```
 
-## Manual Testing Checklist
+### Helper Functions
 
-When testing a tool manually:
+- `load_widget(page, widget_name, api_base)` - Load widget HTML
+- `wait_for_results(page, widget_name)` - Wait for results section
+- `wait_for_error_state(page, widget_name)` - Wait for error state
 
-- [ ] Server starts without errors
-- [ ] Main endpoint works (POST and GET versions)
-- [ ] Data listing endpoint returns data
-- [ ] Widget loads in browser
-- [ ] Widget functionality works
-- [ ] Share URL generation works
-- [ ] Share URLs point to ai-buzz.com
-- [ ] Email subscription works (check console for errors)
-- [ ] Mobile responsive (test at 375px)
-- [ ] Error handling shows user-friendly messages
-- [ ] Loading states work
-
-## Troubleshooting
-
-### Tests Fail to Import
+### Debugging
 
 ```bash
-# Make sure you're in the project root
-cd /path/to/ai-buzz-tools
+# See browser window
+pytest tests/test_widget_integration.py --headed
 
-# Install dependencies
-pip install -r requirements.txt
+# Pause in test for inspection
+await page.pause()  # Opens Playwright inspector
 ```
-
-### Server Won't Start
-
-```bash
-# Check for port conflicts
-lsof -i :8000
-
-# Try different port
-uvicorn main:app --port 8001
-```
-
-### Widget Not Loading
-
-- Check browser console for errors
-- Verify widget file exists in `widgets/` directory
-- Check that router is included in `main.py`
 
 ## Continuous Integration
 
-For CI/CD, run:
+GitHub Actions runs on every push/PR to `main`:
+
+1. Installs dependencies
+2. Installs Playwright browsers
+3. Runs all tests with coverage
+4. Enforces 80% minimum coverage
+
+**Workflow:** `.github/workflows/test.yml`
+
+## Troubleshooting
+
+### Tests fail to import
 
 ```bash
-pytest --cov=api --cov-report=xml
+pip install -r requirements.txt
 ```
 
-This generates coverage reports that can be integrated into CI pipelines.
+### Playwright browsers not found
+
+```bash
+playwright install chromium --with-deps
+```
+
+### Widget tests timeout
+
+```bash
+# Run with visible browser to see what's happening
+pytest tests/test_widget_integration.py --headed
+```
+
+### Port conflicts
+
+```bash
+lsof -i :8000  # Check what's using the port
+pkill -f uvicorn  # Kill existing servers
+```
+
+## Test Files
+
+- `tests/test_pricing.py` - Pricing calculator
+- `tests/test_status.py` - Status page
+- `tests/test_error_decoder.py` - Error decoder
+- `tests/test_widget_integration.py` - Browser tests for all widgets
+- `tests/test_embed.py` - Embed loader
+- `tests/test_shared.py` - Shared utilities
+- `tests/conftest.py` - Fixtures and configuration
+
+## Coverage
+
+Coverage is enforced in CI (80% minimum). To check locally:
+
+```bash
+make coverage
+# Opens htmlcov/index.html
+```

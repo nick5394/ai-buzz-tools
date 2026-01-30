@@ -2,9 +2,9 @@
 title: AI Tools
 slug: ai-tools
 status: publish
-seo_title: Free AI Developer Tools - Pricing Calculator, Status Page, Error Decoder | AI-Buzz
-seo_description: Free tools for AI developers. Compare API costs, check status, decode errors. No signup required. Built for developers making better decisions about AI APIs.
-widget_endpoint: /tools/widget 
+seo_title: Free AI Developer Tools - Pricing, Status, Errors
+seo_description: Free tools for AI developers. Compare API costs, check status, decode errors. No signup required.
+widget_endpoint: /tools/widget
 ---
 
 # Free AI Developer Tools
@@ -70,3 +70,13 @@ No. Error decoding happens client-side. Status checks are anonymous. We don't lo
 ### Can I embed these tools on my site?
 
 Yes! All tools can be embedded via our widget system. Contact us for details.
+
+## Helpful Guides
+
+Looking for more detailed information? Check out our guides:
+
+- [Is OpenAI Down?](/ai-is-openai-down) - Detailed diagnostics when OpenAI isn't responding
+- [OpenAI vs Anthropic Pricing](/ai-openai-vs-anthropic-pricing) - Full cost comparison with examples
+- [AI Error Decoder](/ai-error-decoder) - Fix common API errors with explanations
+- [OpenAI Rate Limits Explained](/ai-openai-rate-limits) - Understand your limits by tier
+- [How to Handle 429 Errors](/ai-openai-429-errors) - Code examples for rate limit handling

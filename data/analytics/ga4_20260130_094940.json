@@ -1,0 +1,705 @@
+{
+  "pulled_at": "2026-01-30T14:49:40.130059Z",
+  "period_days": 7,
+  "events": {
+    "success": true,
+    "period": "last_7_days",
+    "pulled_at": "2026-01-30T14:49:37.877895Z",
+    "events": {
+      "page_view": {
+        "all": 319
+      },
+      "session_start": {
+        "all": 289
+      },
+      "first_visit": {
+        "all": 267
+      },
+      "scroll": {
+        "all": 170
+      },
+      "user_engagement": {
+        "all": 96
+      },
+      "click": {
+        "all": 6
+      }
+    }
+  },
+  "traffic": {
+    "success": true,
+    "period": "last_7_days",
+    "pulled_at": "2026-01-30T14:49:39.456602Z",
+    "pages": [
+      {
+        "path": "/",
+        "views": 37,
+        "users": 31
+      },
+      {
+        "path": "/anthropic-overtakes-openai-in-enterprise-ai-market-share",
+        "views": 18,
+        "users": 12
+      },
+      {
+        "path": "/ai-tools",
+        "views": 7,
+        "users": 1
+      },
+      {
+        "path": "/ai-pricing-calculator",
+        "views": 6,
+        "users": 2
+      },
+      {
+        "path": "/anthropics-claude-deploys-dark-pattern-that-defies-gdpr-guidelines",
+        "views": 5,
+        "users": 5
+      },
+      {
+        "path": "/google-stitch-agent-skills-update-automates-design-to-code",
+        "views": 5,
+        "users": 4
+      },
+      {
+        "path": "/gpt-5s-math-retraction-reveals-research-accelerator-role",
+        "views": 5,
+        "users": 5
+      },
+      {
+        "path": "/mumbai-ai-gcc-hub-supervity-ai-redefines-global-services",
+        "views": 5,
+        "users": 4
+      },
+      {
+        "path": "/nvidia-personaplex-beats-gemini-live-in-latency-benchmark",
+        "views": 5,
+        "users": 4
+      },
+      {
+        "path": "/ai-error-decoder",
+        "views": 4,
+        "users": 1
+      },
+      {
+        "path": "/ansys-2025-r2-moves-beyond-ai-assist-to-ai-driven-simulation",
+        "views": 4,
+        "users": 4
+      },
+      {
+        "path": "/augment-code-pricing-backlash-signals-end-of-unlimited-ai",
+        "views": 4,
+        "users": 4
+      },
+      {
+        "path": "/kaggle-game-arena-ai-evaluation-for-strategic-reasoning",
+        "views": 4,
+        "users": 4
+      },
+      {
+        "path": "/manus-ai-agent-shows-promise-but-faces-reliability-and-accuracy-challenges-in-early-testing",
+        "views": 4,
+        "users": 2
+      },
+      {
+        "path": "/ai-status",
+        "views": 3,
+        "users": 1
+      },
+      {
+        "path": "/alibaba-qwen3-vs-gpt-performance-vs-geopolitical-risk",
+        "views": 3,
+        "users": 2
+      },
+      {
+        "path": "/apple-vs-openai-app-strategy-os-ai-vs-chatgpt-platform",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/court-rules-chatgpt-history-is-discoverable-evidence-in-lawsuits",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/lovables-1-8b-valuation-fueled-by-agent-technology",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/nvidias-jensen-huang-urges-learn-ai-now-prompt-engineering-is-key",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/openai-prism-the-github-copilot-for-scientific-writing",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/page/12",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/tabarena-proves-sota-tabular-ml-needs-gbdt-dl-ensemble-diversity",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/tag/cluely",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/tag/digital-art",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/tag/gpu-orchestration",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/tag/gui-automation",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/tag/yelp",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/us-ends-disinfo-pacts-creating-ai-propaganda-vacuum",
+        "views": 3,
+        "users": 3
+      },
+      {
+        "path": "/ai-generated-code-reaches-30-at-tech-giants",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/anthropic-research-catches-smart-models-playing-dumb",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/anthropics-structured-access-proposal-defines-us-ai-policy",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/apheris-ai-raises-8-25m-series-a-federated-computing-life-sciences",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/apple-ai-engineer-salary-analysis-377k-baseline-in-2025-push",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/arago-vs-lightmatter-the-high-stakes-photonic-ai-chip-race",
+        "views": 2,
+        "users": 1
+      },
+      {
+        "path": "/chinas-manus-ai-redefines-autonomous-agents-and-challenges-western-tech-dominance",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/chinas-new-ai-ed-policy-fuels-multi-billion-tech-market",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/chinas-quantum-breakthrough-powers-ai-model-fine-tuning",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/former-openai-cto-mira-murati-sets-out-to-transform-ai-access-with-thinking-machines-lab",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/generative-ais-paradox-devaluing-entry-level-roles-demanding-ai-skills",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/geometric-defense-for-ai-tda-achieves-98-attack-detection",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/google-cloud-ai-nrf-2025-retail-artificial-intelligence-3",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/google-launches-bard-to-crush-chatgpt-in-ai/",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/google-pjm-and-tapestry-deploy-ai-to-solve-grid-crisis",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/googles-super-bowl-ai-blunder-how-a-cheese-fact-gone-wrong-sparked-the-gemini-ad-fiasco",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/groks-300-pro-tier-real-time-x-data-for-professionals",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/gumloop-ai-automation-no-code-drag-drop-platform",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/hugging-face-advocates-open-source-ai-in-response-to-trump-administrations-plan",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/iclr-ai-paper-controversy-sparks-debate-on-ethics-and-transparency-in-peer-review",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/idox-ai-privacy-scout-automates-high-stakes-data-redaction",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/microsofts-edtech-play-ai-academy-to-outmaneuver-google",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/mistral-ai-le-chat-afp-news-partnership-real-time-2",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/new-lidar-mirror-attack-vulnerability-affects-av-safety",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/nvidia-acquires-runai-gpu-orchestration",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/nvidias-hyper-moores-law-ai-computing-power-doubles-every-six-months",
+        "views": 2,
+        "users": 1
+      },
+      {
+        "path": "/openai-agentkit-the-end-to-end-agent-workflow-platform",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/openai-bankruptcy-risk-2027-high-compute-costs-problem",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/page/33",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/perplexity-ceo-addresses-user-fears-amid-18b-valuation",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/regulation-of-ai-in-the-united-states/",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/sierra-ais-10b-valuation-signals-agentic-ai-market-shift",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/ssi-launch-splits-ai-sutskevers-safety-first-agi-lab",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/agentic-browser",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/ansys",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/anthropic/page/2",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/california-ai-bill",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/china",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/darktrace",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/data-privacy",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/glm-4",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/lidar",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/microsoft-365-copilot",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/product-liability",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/smol2operator",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/video-dubbing",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tag/webflow",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tech-giants-bet-32-billion-on-sutskevers-ai-safety-moonshot",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/tesla-onshores-ai-chips-with-16-5b-samsung-deal-in-texas",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/the-future-of-work-and-ai",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/the-perfect-ai-lie-detector/",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/trends-in-ai-assisted-software-development/",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/uk-tech-grad-hiring-crashes-46-as-genai-automates-roles",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/vice-president-jd-vance-makes-first-overseas-trip-to-paris-ai-summit-amid-global-tech-tensions",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/what-is-openai-grove-a-pre-idea-founder-program",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/when-ai-coders-hurt-new-study-finds-they-slow-senior-devs",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/xais-grok-2-5-open-source-challenges-openai-api-dominance",
+        "views": 2,
+        "users": 2
+      },
+      {
+        "path": "/ai-economic-impact-openai-blueprint-study-sources",
+        "views": 1,
+        "users": 2
+      },
+      {
+        "path": "/ai-future-work-job-market-impact",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/ai-news/research",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/ai-tutorials/development",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/ai-tutorials/fundamentals",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/ai-tutorials/tools",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/alibabas-qwen3-ai-challenges-gpt-4o-for-enterprise-use",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/amazon-introduces-interests-ai-feature-for-personalized-conversational-search",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/apple-partners-with-alibaba-for-ai-push-in-china-aiming-to-reverse-market-decline",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/arm-wants-be-the-ai-leader-in-mobile-ai-hardware/",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/beyond-generation-llms-become-historical-analysis-engines",
+        "views": 1,
+        "users": 0
+      },
+      {
+        "path": "/bnZpZGlhcy",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/elevenlabs-ethical-ai-music-model-debuts-with-minnelli",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/google-ucp-ignites-platform-war-in-ai-driven-shopping",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/grok-3s-rocky-launch-week-from-terrifying-intelligence-to-unexpected-censorship",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/isambard-ai-uks-bet-on-energy-efficiency-for-ai-dominance",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/kraken-ipo-news-ai-energy-os-targets-15b-valuation",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/libby-ai-feature-ignites-debate-on-privacy-vs-librarian-curation",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/llm-scaling-memory-layers-meta-ai-research-knowledge",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/maximor-ai-delivers-audit-ready-agentic-finance-automation",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/mcdonalds-integrates-ai-to-enhance-restaurant-operations-and-customer-experience",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/meta-denies-llama-4-test-training-amid-benchmark-questions",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/metas-new-ai-framework-teaches-machines-to-collaborate",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/metas-open-source-agi-llama-3-competes-with-closed-models",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/microsofts-vs-code-now-defaults-to-anthropics-claude",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/nvidias-customer-risk-40-revenue-from-two-buyers",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openai-and-mit-study-explores-chatgpts-impact-on-loneliness-and-emotional-well-being",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openai-faces-lawsuit-after-chatgpt-falsely-accuses-man-of-murder",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openai-financial-crisis-warning-a-cash-incinerator-model",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openai-gpt-5-codex-autonomous-software-engineering-agent",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openai-retracts-math-claim-exposing-ai-reasoning-gap",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openai-stargate-uk-secures-national-ai-with-blackwell-gpus",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/openais-infrastructure-crisis-ghibli-filters-break-the-bank",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/page/13",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/page/2",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/page/3",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/perplexitys-third-party-defense-escalates-ai-data-wars/",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/ai-evaluation",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/ai-memory",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/bubble-io",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/gpt-5",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/pinecone",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/pinecone-ai",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/real-estate-ai",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/tag/stable-diffusion",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/why-claude-code-has-new-rate-limits-the-real-cost-of-ai",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "path": "/zhipu-glm-4-gets-agent-skills-all-tools-for-autonomy",
+        "views": 1,
+        "users": 1
+      }
+    ]
+  },
+  "funnel": {
+    "success": false,
+    "error": "400 Did you mean customEvent:tel_number? Field customEvent:tool_name is not a valid dimension. For a list of valid dimensions and metrics, see https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema "
+  }
+}

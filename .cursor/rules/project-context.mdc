@@ -215,7 +215,10 @@ Every tool page has a markdown file in `content/tools/` with:
 In WordPress/Bricks, use a Code element with:
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 Replace `error-decoder` with the tool name: `pricing`, `status`, or `error-decoder`.

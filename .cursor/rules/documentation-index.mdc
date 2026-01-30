@@ -1,0 +1,68 @@
+---
+description: Points to relevant documentation - read these files when working in specific areas
+alwaysApply: false
+---
+
+# Documentation Index
+
+When working in specific areas, read the relevant documentation file for detailed guidance.
+
+## Testing
+
+**File:** `TESTING.md` (663 lines)
+
+Read when:
+
+- Writing or debugging tests
+- Setting up test environment
+- Troubleshooting Playwright issues
+- Understanding CI/CD pipeline
+
+Key sections:
+
+- Pre-push hook setup
+- Widget integration test patterns
+- Debugging tips (--headed, page.pause())
+- Performance optimization
+
+## WordPress Integration
+
+**File:** `WORDPRESS_SETUP.md` (266 lines)
+
+Read when:
+
+- Setting up WordPress credentials
+- Syncing content templates
+- Troubleshooting widget embedding
+- Understanding the JS loader approach
+
+Key sections:
+
+- Application password setup
+- CLI commands (wp_pages.py)
+- Widget embedding options
+- Cache bypass explanation
+
+## Project Overview
+
+**File:** `README.md` (191 lines)
+
+Read when:
+
+- Understanding project architecture
+- Looking up API endpoints
+- Quick start instructions
+
+## When to Read vs. When to Follow Rules
+
+**Rules (in `.cursor/rules/`)** — Follow these always:
+
+- `file-protection.mdc` — What files need approval
+- `composer-discipline.mdc` — Completion requirements
+- `ai-buzz-tools.mdc` — Core principles
+
+**Documentation (in root)** — Read when needed:
+
+- `TESTING.md` — Detailed testing reference
+- `WORDPRESS_SETUP.md` — Setup instructions
+- `README.md` — Project overview

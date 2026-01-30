@@ -9,8 +9,7 @@ __pycache__/
 venv/
 env/
 ENV/
-news_pipeline_env_310/
-.venv
+.venv/
 
 # Environment Variables
 .env

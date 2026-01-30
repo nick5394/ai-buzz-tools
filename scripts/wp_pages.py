@@ -131,6 +131,19 @@ def markdown_to_html(md: str) -> str:
     """
     html = md
     
+    # First, handle code blocks (``` ... ```) - convert to <pre><code>
+    # This must happen before other conversions to preserve code content
+    def replace_code_block(match):
+        lang = match.group(1) or ''
+        code = match.group(2)
+        # Escape HTML entities in code
+        code = code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        if lang:
+            return f'<pre><code class="language-{lang}">{code}</code></pre>'
+        return f'<pre><code>{code}</code></pre>'
+    
+    html = re.sub(r'```(\w*)\n(.*?)```', replace_code_block, html, flags=re.DOTALL)
+    
     # Convert headings
     html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
     html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
@@ -143,14 +156,58 @@ def markdown_to_html(md: str) -> str:
     html = re.sub(r'\*\*([^\*]+)\*\*', r'<strong>\1</strong>', html)
     html = re.sub(r'\*([^\*]+)\*', r'<em>\1</em>', html)
     
-    # Convert lists (simple - bullet lists)
+    # Convert markdown tables to HTML tables
+    def convert_table(table_lines):
+        """Convert markdown table lines to HTML table."""
+        rows = []
+        for i, line in enumerate(table_lines):
+            # Skip separator row (contains only |, -, and spaces)
+            if re.match(r'^[\|\-\s:]+$', line):
+                continue
+            cells = [cell.strip() for cell in line.strip('|').split('|')]
+            tag = 'th' if i == 0 else 'td'
+            row = ''.join(f'<{tag}>{cell}</{tag}>' for cell in cells)
+            rows.append(f'<tr>{row}</tr>')
+        if rows:
+            # First row is header
+            header = rows[0] if rows else ''
+            body = ''.join(rows[1:]) if len(rows) > 1 else ''
+            return f'<table><thead>{header}</thead><tbody>{body}</tbody></table>'
+        return ''
+    
+    # Convert lists and paragraphs, preserving HTML tags
     lines = html.split('\n')
     in_list = False
+    in_table = False
+    table_lines = []
     result = []
     
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith('- '):
+        
+        # Check if line is part of a markdown table (starts and ends with |)
+        is_table_line = stripped.startswith('|') and stripped.endswith('|')
+        
+        if is_table_line:
+            if not in_table:
+                in_table = True
+                table_lines = []
+            table_lines.append(stripped)
+            continue
+        elif in_table:
+            # End of table, convert it
+            result.append(convert_table(table_lines))
+            in_table = False
+            table_lines = []
+        
+        # Skip lines that already contain HTML (like <script>, <pre>, <table>, etc.)
+        # These should pass through unchanged
+        if stripped.startswith('<') and ('>' in stripped or stripped.startswith('</')):
+            if in_list:
+                result.append('</ul>')
+                in_list = False
+            result.append(stripped)
+        elif stripped.startswith('- '):
             if not in_list:
                 result.append('<ul>')
                 in_list = True
@@ -164,8 +221,13 @@ def markdown_to_html(md: str) -> str:
             else:
                 result.append('')
     
+    # Close any open list
     if in_list:
         result.append('</ul>')
+    
+    # Handle any remaining table
+    if in_table and table_lines:
+        result.append(convert_table(table_lines))
     
     html = '\n'.join(result)
     
@@ -315,6 +377,94 @@ def cmd_diff(args):
     print(f"\nRemote page ID: {page['id']}")
     print(f"Remote status: {page['status']}")
 
+def cmd_push_all(args):
+    """Push all markdown files in content/tools/ to WordPress."""
+    from pathlib import Path
+    import time
+    
+    wp = WordPressService()
+    if not wp.is_configured():
+        print("Error: WordPress not configured. Set WORDPRESS_USERNAME and WORDPRESS_APP_PASSWORD.")
+        return 1
+    
+    content_dir = Path("content/tools")
+    md_files = sorted(content_dir.glob("*.md"))
+    
+    # Skip template file
+    md_files = [f for f in md_files if not f.name.startswith('_')]
+    
+    print(f"Found {len(md_files)} content files to push")
+    print("-" * 50)
+    
+    successes = []
+    failures = []
+    
+    for i, content_path in enumerate(md_files):
+        print(f"\n[{i+1}/{len(md_files)}] Pushing {content_path.name}...")
+        
+        content = content_path.read_text(encoding='utf-8')
+        meta, body = parse_frontmatter(content)
+        
+        if not meta.get('slug'):
+            print(f"  ⚠️  Skipped: no slug in frontmatter")
+            failures.append((content_path.name, "no slug"))
+            continue
+        
+        # Check if page exists
+        existing = wp.get_page_by_slug(meta['slug'])
+        
+        page_data = {
+            'title': meta.get('title', 'Untitled'),
+            'content': markdown_to_html(body),
+            'slug': meta['slug'],
+            'status': meta.get('status', 'draft'),
+        }
+        
+        if existing:
+            result = wp.update_page(existing['id'], page_data)
+            action = "Updated"
+            page_id = existing['id']
+        else:
+            result = wp.create_page(page_data)
+            action = "Created"
+            page_id = result['id'] if result else None
+        
+        if result:
+            print(f"  ✅ {action} page {page_id}: {meta['slug']}")
+            
+            # Update SEO meta if present
+            if meta.get('seo_title') or meta.get('seo_description'):
+                wp.update_aioseo_meta(page_id, {
+                    'title': meta.get('seo_title', ''),
+                    'description': meta.get('seo_description', ''),
+                })
+            
+            successes.append((content_path.name, meta['slug'], page_id))
+        else:
+            print(f"  ❌ Failed to {action.lower()} page")
+            failures.append((content_path.name, f"failed to {action.lower()}"))
+        
+        # Small delay between requests to be nice to the server
+        if i < len(md_files) - 1:
+            time.sleep(1)
+    
+    # Summary
+    print("\n" + "=" * 50)
+    print("SUMMARY")
+    print("=" * 50)
+    print(f"✅ Successes: {len(successes)}")
+    for name, slug, page_id in successes:
+        print(f"   - {name} → {slug} (ID: {page_id})")
+    
+    if failures:
+        print(f"\n❌ Failures: {len(failures)}")
+        for name, reason in failures:
+            print(f"   - {name}: {reason}")
+        return 1
+    
+    return 0
+
+
 def cmd_verify(args):
     """Verify WordPress pages by taking screenshots/PDFs."""
     # Lazy import - only load screenshot module when verify command is called
@@ -360,6 +510,8 @@ def main():
     push = subparsers.add_parser('push', help='Push local markdown to WordPress')
     push.add_argument('--file', required=True, help='Path to markdown file')
     
+    subparsers.add_parser('push-all', help='Push all markdown files to WordPress')
+    
     diff = subparsers.add_parser('diff', help='Show diff between local and remote')
     diff.add_argument('--slug', required=True, help='Page slug')
     
@@ -374,6 +526,7 @@ def main():
         'list': cmd_list,
         'pull': cmd_pull,
         'push': cmd_push,
+        'push-all': cmd_push_all,
         'diff': cmd_diff,
         'verify': cmd_verify,
     }

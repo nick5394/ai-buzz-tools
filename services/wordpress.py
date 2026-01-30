@@ -6,10 +6,16 @@ for AI-Buzz tool pages.
 """
 import os
 import logging
+import time
 import requests
 from typing import Optional, Dict, List, Any
 
 logger = logging.getLogger(__name__)
+
+# Retry configuration for transient errors (503, 429, etc.)
+MAX_RETRIES = 3
+RETRY_DELAY_SECONDS = 5
+RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 
 class WordPressService:
@@ -31,6 +37,65 @@ class WordPressService:
         """Check if WordPress credentials are configured."""
         return bool(self.username and self.app_password)
     
+    def _request_with_retry(
+        self, 
+        method: str, 
+        url: str, 
+        max_retries: int = MAX_RETRIES,
+        **kwargs
+    ) -> requests.Response:
+        """Make HTTP request with retry logic for transient errors.
+        
+        Args:
+            method: HTTP method (get, post, etc.)
+            url: Request URL
+            max_retries: Maximum number of retries
+            **kwargs: Additional arguments passed to requests
+            
+        Returns:
+            Response object
+            
+        Raises:
+            requests.RequestException: If all retries fail
+        """
+        last_exception = None
+        
+        for attempt in range(max_retries + 1):
+            try:
+                response = requests.request(method, url, **kwargs)
+                
+                # If success or non-retryable error, return immediately
+                if response.status_code not in RETRYABLE_STATUS_CODES:
+                    return response
+                
+                # Retryable error - log and maybe retry
+                if attempt < max_retries:
+                    wait_time = RETRY_DELAY_SECONDS * (2 ** attempt)  # Exponential backoff
+                    logger.warning(
+                        f"Request to {url} returned {response.status_code}. "
+                        f"Retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})..."
+                    )
+                    print(f"  ⏳ Server returned {response.status_code}, retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    # Final attempt failed
+                    return response
+                    
+            except requests.RequestException as e:
+                last_exception = e
+                if attempt < max_retries:
+                    wait_time = RETRY_DELAY_SECONDS * (2 ** attempt)
+                    logger.warning(f"Request failed: {e}. Retrying in {wait_time}s...")
+                    print(f"  ⏳ Request failed, retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    raise
+        
+        # Should not reach here, but just in case
+        if last_exception:
+            raise last_exception
+        return response
+    
     def get_page_by_slug(self, slug: str) -> Optional[Dict[str, Any]]:
         """Get a page by its URL slug.
         
@@ -41,7 +106,8 @@ class WordPressService:
             Dictionary containing page data if found, None if not found
         """
         try:
-            response = requests.get(
+            response = self._request_with_retry(
+                'get',
                 f"{self.api_url}/pages",
                 params={'slug': slug, 'per_page': 1},
                 auth=self.auth,
@@ -134,8 +200,9 @@ class WordPressService:
             if 'template' in page_data:
                 api_data['template'] = page_data['template']
                 
-            # Make API request
-            response = requests.post(
+            # Make API request with retry logic
+            response = self._request_with_retry(
+                'post',
                 endpoint,
                 json=api_data,
                 auth=self.auth,
@@ -173,7 +240,8 @@ class WordPressService:
         try:
             endpoint = f"{self.api_url}/pages/{page_id}"
             
-            response = requests.post(
+            response = self._request_with_retry(
+                'post',
                 endpoint,
                 json=page_data,
                 auth=self.auth,

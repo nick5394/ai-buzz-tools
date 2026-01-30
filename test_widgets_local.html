@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local Widget Testing - AI-Buzz Tools</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      h1 {
+        color: #2563eb;
+        margin-bottom: 10px;
+      }
+      .info {
+        background: #e0f2fe;
+        border-left: 4px solid #2563eb;
+        padding: 15px;
+        margin-bottom: 30px;
+        border-radius: 4px;
+      }
+      .widget-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .widget-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #1f2937;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Local Widget Testing</h1>
+
+    <div class="info">
+      <strong>Testing widgets locally:</strong><br />
+      This page loads widgets from <code>http://localhost:8765</code> and
+      injects <code>window.API_BASE_URL</code> so widgets make API calls to the
+      local server instead of production.<br /><br />
+      <strong>To use:</strong> Make sure the local server is running
+      (<code>./scripts/test_widgets_locally.sh</code>)
+    </div>
+
+    <div class="widget-container">
+      <div class="widget-title">Error Decoder Widget</div>
+      <div id="error-decoder-container"></div>
+    </div>
+
+    <div class="widget-container">
+      <div class="widget-title">Pricing Calculator Widget</div>
+      <div id="pricing-container"></div>
+    </div>
+
+    <div class="widget-container">
+      <div class="widget-title">Status Page Widget</div>
+      <div id="status-container"></div>
+    </div>
+
+    <script>
+      // Set API base URL to localhost before loading widgets
+      window.API_BASE_URL = "http://localhost:8765";
+
+      const API_BASE = "http://localhost:8765";
+
+      // Load Error Decoder widget
+      fetch(`${API_BASE}/error-decoder/widget`)
+        .then((r) => r.text())
+        .then((html) => {
+          document.getElementById("error-decoder-container").innerHTML = html;
+        })
+        .catch((err) => {
+          document.getElementById("error-decoder-container").innerHTML =
+            `<p style="color: red;">Error loading widget: ${err.message}</p>`;
+        });
+
+      // Load Pricing Calculator widget
+      fetch(`${API_BASE}/pricing/widget`)
+        .then((r) => r.text())
+        .then((html) => {
+          document.getElementById("pricing-container").innerHTML = html;
+        })
+        .catch((err) => {
+          document.getElementById("pricing-container").innerHTML =
+            `<p style="color: red;">Error loading widget: ${err.message}</p>`;
+        });
+
+      // Load Status Page widget
+      fetch(`${API_BASE}/status/widget`)
+        .then((r) => r.text())
+        .then((html) => {
+          document.getElementById("status-container").innerHTML = html;
+        })
+        .catch((err) => {
+          document.getElementById("status-container").innerHTML =
+            `<p style="color: red;">Error loading widget: ${err.message}</p>`;
+        });
+    </script>
+  </body>
+</html>
