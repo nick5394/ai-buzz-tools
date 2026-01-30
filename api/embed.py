@@ -209,6 +209,6 @@ async def get_embed_script():
         content=embed_js,
         media_type="application/javascript",
         headers={
-            "Cache-Control": "public, max-age=3600",  # Cache the loader script itself
+            "Cache-Control": "public, max-age=300",  # Cache for 5 minutes (allows faster updates)
         }
     )
