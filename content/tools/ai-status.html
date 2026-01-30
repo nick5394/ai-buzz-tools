@@ -1,0 +1,211 @@
+---
+title: AI API Status Page - Is OpenAI Down?
+slug: ai-status
+status: publish
+page_id: 14733
+seo_title: Is OpenAI Down? AI API Status - Real-time Monitoring | Free
+seo_description: Check if OpenAI, Anthropic, Google AI APIs are down. Real-time status monitoring updated every 60 seconds. Free, no signup.
+widget_endpoint: /status/widget
+---
+
+<p>Getting errors from OpenAI, Anthropic, or Google AI? Before debugging your code, check if the API is actually down. Real-time status monitoring for all major AI providers, updated every 60 seconds.</p>
+
+<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="status"></script>
+
+<h3>Is It the API or Your Code?</h3>
+
+<p>When your AI API calls start failing, the first question is: "Is the provider down, or is it my code?" Here's how to tell the difference.</p>
+
+<h4>Signs the Provider is Down</h4>
+
+<ul>
+<li><strong>500/503 errors</strong> — Server errors from the API</li>
+<li><strong>Timeout errors</strong> — Requests hanging that weren't before</li>
+<li><strong>429 errors</strong> — Rate limits when you haven't changed usage</li>
+<li><strong>Multiple endpoints failing</strong> — Not just one model or feature</li>
+<li><strong>Others reporting issues</strong> — Check Twitter/X, Reddit, or Discord</li>
+</ul>
+
+<h4>Signs It's Your Code</h4>
+
+<ul>
+<li><strong>401 errors</strong> — Authentication failed (check your API key)</li>
+<li><strong>400 errors</strong> — Bad request format (validate your payload)</li>
+<li><strong>Only your requests fail</strong> — Others aren't reporting issues</li>
+<li><strong>Consistent error patterns</strong> — Same error every time</li>
+<li><strong>New code deployment</strong> — Did you change something recently?</li>
+</ul>
+
+<h3>Quick Diagnostic: Is OpenAI Down?</h3>
+
+<p>If you're specifically troubleshooting OpenAI issues:</p>
+
+<ol>
+<li><strong>Check the status widget above</strong> — Green means operational</li>
+<li><strong>Test with a simple curl request:</strong></li>
+</ol>
+
+<pre><code class="language-bash">curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"
+</code></pre>
+
+<ol>
+<li><strong>Check OpenAI's official status page:</strong> <a href="https://status.openai.com">status.openai.com</a></li>
+<li><strong>Look for community reports:</strong> Twitter/X, Reddit r/OpenAI, or Discord</li>
+</ol>
+
+<p>If the curl works but your app doesn't, it's your code. If curl fails too, it's likely an outage.</p>
+
+<h3>What to Do During an Outage</h3>
+
+<p>If the status above shows issues, here's your action plan:</p>
+
+<ol>
+<li><strong>Verify the outage</strong> — Check the provider's official status page (linked in each card above)</li>
+<li><strong>Check your error handling</strong> — Make sure your app degrades gracefully</li>
+<li><strong>Implement retries</strong> — Use exponential backoff for transient errors</li>
+<li><strong>Consider fallbacks</strong> — Some apps can switch to a backup provider</li>
+<li><strong>Monitor for recovery</strong> — Subscribe to alerts above to know when it's back</li>
+</ol>
+
+<h4>Example: Graceful Degradation</h4>
+
+<pre><code class="language-python">import openai
+from tenacity import retry, wait_exponential, stop_after_attempt
+
+@retry(wait=wait_exponential(min=1, max=60), stop=stop_after_attempt(5))
+def call_openai_with_fallback(prompt):
+    try:
+        return openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )
+    except openai.APIStatusError as e:
+        if e.status_code &gt;= 500:
+            # Server error - might be an outage
+            raise  # Let tenacity retry
+        raise  # Don't retry client errors
+</code></pre>
+
+<h3>Provider-Specific Diagnostics</h3>
+
+<h4>OpenAI</h4>
+
+<strong>Official status:</strong> <a href="https://status.openai.com">status.openai.com</a>
+
+<strong>Common issues:</strong>
+
+<ul>
+<li>Rate limits are tier-based (check your <a href="/ai-openai-rate-limits">rate limit tier</a>)</li>
+<li>Model-specific outages (GPT-4 can be down while GPT-3.5 works)</li>
+<li>Streaming endpoints may fail independently</li>
+<li>o1 and o3 models have separate capacity from GPT-4o</li>
+</ul>
+
+<strong>Quick test:</strong>
+
+<pre><code class="language-bash">curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"
+</code></pre>
+
+<h4>Anthropic</h4>
+
+<strong>Official status:</strong> <a href="https://status.anthropic.com">status.anthropic.com</a>
+
+<strong>Common issues:</strong>
+
+<ul>
+<li>Separate rate limits for Claude 3.5 Sonnet vs other models</li>
+<li>Occasional 529 "overloaded" errors during peak times</li>
+<li>Message limits more strict than token limits</li>
+</ul>
+
+<strong>Quick test:</strong>
+
+<pre><code class="language-bash">curl https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model": "claude-3-5-sonnet-20241022", "max_tokens": 1, "messages": [{"role": "user", "content": "Hi"}]}'
+</code></pre>
+
+<h4>Google AI (Gemini)</h4>
+
+<strong>Official status:</strong> <a href="https://status.cloud.google.com">status.cloud.google.com</a>
+
+<strong>Common issues:</strong>
+
+<ul>
+<li>Regional availability differences</li>
+<li>Quota limits separate from rate limits</li>
+<li>Vertex AI and AI Studio have different endpoints</li>
+</ul>
+
+<h4>Mistral</h4>
+
+<strong>Official status:</strong> <a href="https://status.mistral.ai">status.mistral.ai</a>
+
+<strong>Common issues:</strong>
+
+<ul>
+<li>Newer provider, less historical reliability data</li>
+<li>Rate limits vary significantly by tier</li>
+</ul>
+
+<h3>Why Check Status Before Debugging?</h3>
+
+<strong>Saves time:</strong> Don't spend hours debugging code when the API is down.
+
+<strong>Prevents false alarms:</strong> Know immediately if it's a provider issue vs your implementation.
+
+<strong>Better user experience:</strong> Show users a clear message during outages instead of generic errors.
+
+<strong>Faster resolution:</strong> Get notified when services come back online.
+
+<h3>How to Use</h3>
+
+<ol>
+<li>View the status cards — green means operational, yellow means degraded, red means down</li>
+<li>Check the "last checked" timestamp to confirm data is fresh</li>
+<li>Click any provider card for more details and their official status page</li>
+</ol>
+
+<p>Status auto-refreshes every 60 seconds. Manual refresh available anytime.</p>
+
+<h3>FAQ</h3>
+
+<h4>How do I know if OpenAI is down?</h4>
+
+<p>Check the status widget above — it shows real-time status for OpenAI and all major providers. Green means operational, yellow means degraded, red means down. You can also check OpenAI's official status page at status.openai.com.</p>
+
+<h4>What should I do if OpenAI is down?</h4>
+
+<p>Wait for OpenAI to resolve the issue. Check their status page for updates. Implement retry logic with exponential backoff in your code. Subscribe to alerts above to get notified when services come back online.</p>
+
+<h4>How do you check API status?</h4>
+
+<p>We make lightweight API calls to each provider's endpoint and measure response time and error rates. This detects outages faster than waiting for official status page updates.</p>
+
+<h4>Why does it say "operational" when I'm getting errors?</h4>
+
+<p>The API may be operational but your specific request could fail due to: rate limits, invalid API key, malformed request, or model-specific issues. Try the <a href="/ai-error-decoder">Error Decoder tool</a> to diagnose.</p>
+
+<h4>What's the difference between degraded and down?</h4>
+
+<strong>Degraded</strong> means the API is responding but slower than normal or with intermittent errors. Your requests may still work but with higher latency or occasional failures. <strong>Down</strong> means the API is completely unavailable.
+
+<h4>How often does the status update?</h4>
+
+<p>Every 60 seconds. The "last checked" timestamp shows when we last verified each provider.</p>
+
+<h4>Is this tool free?</h4>
+
+<p>Yes, completely free. Subscribe for outage alerts via email.</p>
+
+<h3>Related Tools</h3>
+
+<ul>
+<li><a href="/ai-error-decoder">AI Error Decoder</a> - If you're getting errors, decode what they mean</li>
+<li><a href="/ai-openai-rate-limits">OpenAI Rate Limits Explained</a> - Understand your rate limits by tier</li>
+<li><a href="/ai-openai-429-errors">How to Handle OpenAI 429 Errors</a> - Fix rate limit issues with code examples</li>
+<li><a href="/ai-pricing-calculator">AI Pricing Calculator</a> - Compare costs across providers</li>
+<li><a href="/ai-tools">All AI Developer Tools</a> - Browse all free tools</li>
+</ul>

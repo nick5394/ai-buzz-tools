@@ -125,11 +125,20 @@ After syncing, verify:
 # List all WordPress pages
 python scripts/wp_pages.py list
 
-# Pull page from WordPress to local markdown
+# Pull page from WordPress to local HTML
 python scripts/wp_pages.py pull --slug ai-pricing-calculator
 
-# Push local markdown to WordPress
-python scripts/wp_pages.py push --file content/tools/pricing-calculator.md
+# Push local HTML to WordPress (as page)
+python scripts/wp_pages.py push --file content/tools/ai-pricing-calculator.html
+
+# Push all pages
+python scripts/wp_pages.py push-all
+
+# Push local HTML as WordPress POST (for guides)
+python scripts/wp_pages.py push-post --file content/guides/ai-openai-429-errors.html
+
+# Push all guides as posts
+python scripts/wp_pages.py push-guides
 
 # Show diff info (basic)
 python scripts/wp_pages.py diff --slug ai-pricing-calculator
@@ -137,6 +146,37 @@ python scripts/wp_pages.py diff --slug ai-pricing-calculator
 # Validate templates before pushing
 python scripts/validate_templates.py
 ```
+
+## Content Architecture
+
+### Pages vs Posts
+
+**Tool Pages (WordPress Pages)** - `content/tools/`
+- Interactive tools with widgets
+- Clean URLs: `/ai-pricing-calculator`
+- 4 pages: pricing-calculator, status, error-decoder, tools
+
+**Guide Pages (WordPress Posts)** - `content/guides/`
+- Article content with guides and tutorials
+- Uses working post template for proper HTML rendering
+- 4 guides: openai-429-errors, openai-rate-limits, openai-vs-anthropic-pricing, openai-errors
+- Category: "AI Guides"
+
+### Required Redirects
+
+After migrating guides from Pages to Posts, set up 301 redirects to preserve SEO:
+
+**In WordPress Redirection plugin or .htaccess:**
+
+```
+# Old PAGE URLs → New POST URLs
+/ai-is-openai-down → /ai-status (merged content)
+
+# If post URLs differ from page URLs, add redirects like:
+# /page-slug → /post-slug
+```
+
+The guides should retain their slugs (`ai-openai-429-errors`, etc.) so redirects may not be needed if WordPress preserves the URL structure.
 
 ## Widget Embedding
 
@@ -263,3 +303,144 @@ You can embed multiple widgets on the same page - each script tag works independ
 - Verify you're in Text mode (Classic Editor) or HTML block (Block Editor), not Visual mode
 - Some security plugins block script tags - check if you have one installed
 - Try viewing page source to confirm script tag is in the HTML output
+
+## GA4 Analytics Setup
+
+Widgets track user interactions via Google Analytics 4 (GA4). This section covers how to verify GA4 is working and configure custom dimensions for detailed reporting.
+
+### Prerequisites
+
+GA4 must be installed on your WordPress site. Common methods:
+
+- **Bricks Builder** - Settings > Custom Code > Header Scripts
+- **Site Kit by Google** - Plugin that manages GA4
+- **MonsterInsights** - Popular GA4 plugin
+- **Manual gtag.js** - Add snippet to theme header
+
+### Events Tracked by Widgets
+
+All widgets track these events automatically:
+
+| Event Name      | When Fired                                            | Parameters            |
+| --------------- | ----------------------------------------------------- | --------------------- |
+| `tool_used`     | User completes main action (decode, calculate, check) | `tool_name`, `action` |
+| `email_signup`  | User subscribes to alerts                             | `tool_name`           |
+| `share_created` | User copies share URL                                 | `tool_name`           |
+
+**tool_name values:** `error_decoder`, `pricing_calculator`, `status_page`, `tools-landing`
+
+### Step 1: Verify GA4 is Loading
+
+Open browser DevTools console on any tool page and run:
+
+```javascript
+aiBuzzDebug();
+```
+
+**Expected output if GA4 is working:**
+
+```
+=== AI-Buzz GA4 Debug ===
+gtag available: true
+dataLayer: 5 items
+Sending test event: ai_buzz_debug_test
+Test event sent! Check GA4 DebugView...
+```
+
+**If gtag shows `false`:** GA4 is not installed on the page. Check your WordPress GA4 setup.
+
+### Step 2: Configure Custom Dimensions in GA4
+
+To see `tool_name` in your GA4 reports, you need to register it as a custom dimension:
+
+1. Go to **GA4 Admin** (gear icon)
+2. Under Property, click **Custom definitions**
+3. Click **Create custom dimension**
+4. Create these two dimensions:
+
+| Dimension name | Scope | Event parameter |
+| -------------- | ----- | --------------- |
+| Tool Name      | Event | `tool_name`     |
+| Action         | Event | `action`        |
+
+5. Click **Save**
+
+**Note:** Custom dimensions take 24-48 hours to start populating with data.
+
+### Step 3: Enable GA4 DebugView for Testing
+
+DebugView shows events in real-time (instead of waiting 24-48 hours):
+
+1. Install **GA Debugger** Chrome extension
+2. Enable the extension on your site
+3. Go to **GA4 Admin > Property > DebugView**
+4. Use a tool on your site - events should appear in DebugView within seconds
+
+### Step 4: Verify Events Are Firing
+
+1. Open browser DevTools Console
+2. Visit a tool page (e.g., `/ai-error-decoder`)
+3. Use the tool (decode an error, calculate pricing, etc.)
+4. Look for console messages like:
+
+```
+[AI-Buzz] Event tracked: tool_used {tool_name: "error_decoder", action: "decode"}
+```
+
+If you see this message, events are being sent to GA4.
+
+### Troubleshooting GA4 Issues
+
+**Events not appearing in GA4 reports:**
+
+- Custom dimensions take 24-48 hours to populate
+- Use DebugView for immediate testing
+- Verify `aiBuzzDebug()` shows `gtag available: true`
+
+**"gtag not available" in console:**
+
+- GA4 is not installed or loading after widgets
+- Check WordPress GA4 plugin settings
+- Verify gtag.js is in page source (View Source > search for "gtag")
+- Widgets retry for up to 2 seconds, so gtag loading slightly late is OK
+
+**Events fire but tool_name is empty in reports:**
+
+- Custom dimension `tool_name` not configured in GA4 Admin
+- Follow Step 2 above to create the custom dimension
+- Wait 24-48 hours for data to appear
+
+**DebugView not showing events:**
+
+- Make sure GA Debugger extension is enabled
+- Refresh the page after enabling
+- Check that you're looking at the correct GA4 property
+
+### Viewing Analytics Data
+
+**In GA4 (web interface):**
+
+1. Go to **Reports > Engagement > Events**
+2. Click on `tool_used`, `email_signup`, or `share_created`
+3. Add secondary dimension "Tool Name" to see breakdown by tool
+
+**Via API (automated):**
+
+```bash
+# Pull GA4 data to local JSON file
+python scripts/analytics.py pull-ga4 --days 7
+
+# Generate insights report
+python scripts/analytics.py report
+
+# View report
+cat data/analytics/latest_report.md
+```
+
+### GA4 Setup Checklist
+
+- [ ] GA4 is installed on WordPress (verify with `aiBuzzDebug()`)
+- [ ] Custom dimension `tool_name` created in GA4 Admin
+- [ ] Custom dimension `action` created in GA4 Admin
+- [ ] Events appear in DebugView when using tools
+- [ ] Console shows "[AI-Buzz] Event tracked:" messages

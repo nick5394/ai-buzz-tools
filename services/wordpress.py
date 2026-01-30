@@ -315,6 +315,191 @@ class WordPressService:
             logger.error(f"Error fetching pages: {e}")
             return []
     
+    # =========================================================================
+    # POST OPERATIONS (for guide/article content)
+    # =========================================================================
+    
+    def get_post_by_slug(self, slug: str) -> Optional[Dict[str, Any]]:
+        """Get a post by its URL slug.
+        
+        Args:
+            slug: Post slug (e.g., 'ai-openai-429-errors')
+            
+        Returns:
+            Dictionary containing post data if found, None if not found
+        """
+        try:
+            response = self._request_with_retry(
+                'get',
+                f"{self.api_url}/posts",
+                params={'slug': slug, 'per_page': 1},
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                posts = response.json()
+                if posts:
+                    return posts[0]
+                return None
+            else:
+                logger.error(
+                    f"Failed to get post by slug '{slug}': "
+                    f"Status {response.status_code}"
+                )
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error getting post by slug '{slug}': {e}")
+            return None
+    
+    def create_post(self, post_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Create a new post in WordPress.
+        
+        Args:
+            post_data: Dictionary containing post data including:
+                - title: Post title
+                - content: Post content (HTML)
+                - slug: URL slug
+                - status: Post status (draft, publish, etc.)
+                - categories: List of category IDs (optional)
+                - tags: List of tag IDs (optional)
+                
+        Returns:
+            Dictionary containing post data if successful, None if failed
+        """
+        try:
+            if not post_data.get('content'):
+                raise ValueError("Post content is required")
+                
+            endpoint = f"{self.api_url}/posts"
+            
+            api_data = {
+                'title': post_data.get('title', 'Draft Post'),
+                'content': post_data['content'],
+                'status': post_data.get('status', 'draft'),
+            }
+            
+            if 'slug' in post_data:
+                api_data['slug'] = post_data['slug']
+            if 'categories' in post_data:
+                api_data['categories'] = post_data['categories']
+            if 'tags' in post_data:
+                api_data['tags'] = post_data['tags']
+                
+            response = self._request_with_retry(
+                'post',
+                endpoint,
+                json=api_data,
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                post = response.json()
+                logger.info(f"Successfully created post with ID: {post.get('id')}")
+                return post
+            else:
+                logger.error(
+                    f"Failed to create post: Status {response.status_code}, "
+                    f"Response: {response.text}"
+                )
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error creating post: {e}")
+            return None
+    
+    def update_post(self, post_id: int, post_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update an existing post in WordPress.
+        
+        Args:
+            post_id: WordPress post ID
+            post_data: Dictionary containing fields to update
+                
+        Returns:
+            Dictionary containing updated post data if successful, None if failed
+        """
+        try:
+            endpoint = f"{self.api_url}/posts/{post_id}"
+            
+            response = self._request_with_retry(
+                'post',
+                endpoint,
+                json=post_data,
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                post = response.json()
+                logger.info(f"Successfully updated post ID: {post_id}")
+                return post
+            else:
+                logger.error(
+                    f"Failed to update post: Status {response.status_code}, "
+                    f"Response: {response.text}"
+                )
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error updating post {post_id}: {e}")
+            return None
+    
+    def get_or_create_category(self, name: str, slug: str = None) -> Optional[int]:
+        """Get category ID by name, or create it if it doesn't exist.
+        
+        Args:
+            name: Category name
+            slug: Category slug (optional, derived from name if not provided)
+            
+        Returns:
+            Category ID if successful, None if failed
+        """
+        try:
+            # First try to find existing category
+            response = self._request_with_retry(
+                'get',
+                f"{self.api_url}/categories",
+                params={'search': name, 'per_page': 100},
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                categories = response.json()
+                for cat in categories:
+                    if cat.get('name', '').lower() == name.lower():
+                        return cat['id']
+            
+            # Create new category
+            cat_data = {'name': name}
+            if slug:
+                cat_data['slug'] = slug
+                
+            response = self._request_with_retry(
+                'post',
+                f"{self.api_url}/categories",
+                json=cat_data,
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
+            
+            if response.status_code in [200, 201]:
+                return response.json().get('id')
+            else:
+                logger.error(f"Failed to create category '{name}': {response.status_code}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error with category '{name}': {e}")
+            return None
+
     def update_aioseo_meta(self, page_id: int, meta: Dict[str, str]) -> bool:
         """Update AIOSEO meta data for a page.
         

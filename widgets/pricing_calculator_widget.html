@@ -914,11 +914,28 @@
   const emailErrorEl = document.getElementById("pcw-email-error");
   const filterChipsEl = document.getElementById("pcw-filter-chips");
 
-  // GA4 Event Tracking Helper
+  // GA4 Event Tracking Helper with retry logic for async gtag loading
   function trackEvent(eventName, params = {}) {
-    if (typeof gtag !== 'undefined') {
-      gtag('event', eventName, params);
+    const maxAttempts = 10;
+    const retryDelay = 200; // ms
+    let attempts = 0;
+
+    function tryTrack() {
+      if (typeof gtag === "function") {
+        gtag("event", eventName, params);
+        console.log("[AI-Buzz] Event tracked:", eventName, params);
+        return;
+      }
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(tryTrack, retryDelay);
+      } else {
+        console.warn("[AI-Buzz] gtag not available after retries:", eventName, params);
+      }
     }
+
+    tryTrack();
   }
 
   // State

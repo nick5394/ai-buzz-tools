@@ -1,0 +1,81 @@
+---
+title: "[Tool Name]"
+slug: "ai-[tool-slug]"
+status: "publish"
+seo_title: "[Tool Name] - Free AI Developer Tool | AI-Buzz"
+seo_description: "[Problem this solves in ~155 characters]"
+widget_endpoint: "/[tool-path]/widget"
+---
+
+<!--
+CONTENT FILE TEMPLATE
+
+This file stores the content for a tool page on ai-buzz.com.
+- YAML frontmatter at the top defines metadata and SEO
+- HTML body below is pushed directly to WordPress
+- Use H2 as the top-level heading (Bricks Builder renders page title as H1)
+
+To push to WordPress:
+  python scripts/wp_pages.py push --file content/tools/[filename].html
+-->
+
+<h2>[Tool Name]</h2>
+
+<p>
+  [2-3 sentence intro explaining the problem this tool solves and who it's for.]
+</p>
+
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="[tool-slug]"
+></script>
+
+<!--
+WIDGET EMBED CODE:
+
+Replace [tool-slug] with:
+- pricing (for Pricing Calculator)
+- status (for Status Page)
+- error-decoder (for Error Decoder)
+- tools-landing (for Tools Landing Page)
+
+The widget will automatically inject itself where the script tag is placed.
+-->
+
+<h3>How to Use</h3>
+
+<ol>
+  <li>[Step 1 - what to do first]</li>
+  <li>[Step 2 - main action]</li>
+  <li>[Step 3 - get results]</li>
+</ol>
+
+<h3>FAQ</h3>
+
+<h4>Why use this tool?</h4>
+
+<p>[Answer explaining the value proposition]</p>
+
+<h4>How accurate is the data?</h4>
+
+<p>[Answer about data sources and freshness]</p>
+
+<h4>Is this tool free?</h4>
+
+<p>
+  Yes, all AI-Buzz tools are free with no signup required. Optional email signup
+  for updates.
+</p>
+
+<h3>Related Tools</h3>
+
+<ul>
+  <li>
+    <a href="/ai-pricing-calculator">AI Pricing Calculator</a> - Compare API
+    costs
+  </li>
+  <li><a href="/ai-status">AI Status Page</a> - Check API availability</li>
+  <li>
+    <a href="/ai-error-decoder">AI Error Decoder</a> - Understand API errors
+  </li>
+</ul>

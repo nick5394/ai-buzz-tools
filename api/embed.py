@@ -43,6 +43,28 @@ async def get_embed_script():
     embed_js = f"""(function() {{
   'use strict';
   
+  // GA4 Debug helper - call window.aiBuzzDebug() in browser console to verify GA4 setup
+  window.aiBuzzDebug = function() {{
+    console.log('=== AI-Buzz GA4 Debug ===');
+    console.log('gtag available:', typeof gtag === 'function');
+    console.log('dataLayer:', typeof dataLayer !== 'undefined' ? dataLayer.length + ' items' : 'not found');
+    
+    if (typeof gtag === 'function') {{
+      console.log('Sending test event: ai_buzz_debug_test');
+      gtag('event', 'ai_buzz_debug_test', {{ tool_name: 'debug', timestamp: new Date().toISOString() }});
+      console.log('Test event sent! Check GA4 DebugView (Admin > DebugView) for "ai_buzz_debug_test" event.');
+      console.log('Note: Events may take 24-48 hours to appear in standard GA4 reports.');
+    }} else {{
+      console.error('gtag is NOT available. GA4 may not be installed on this page.');
+      console.log('Troubleshooting steps:');
+      console.log('1. Check if gtag.js is loaded in the page source');
+      console.log('2. Verify GA4 measurement ID is configured in WordPress/Bricks');
+      console.log('3. Check for JavaScript errors that might prevent gtag from loading');
+    }}
+    
+    return 'Debug complete. Check console output above.';
+  }};
+  
   // Find the script tag that loaded this file
   const scripts = document.getElementsByTagName('script');
   let currentScript = null;

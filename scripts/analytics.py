@@ -7,6 +7,7 @@ Usage:
     python scripts/analytics.py pull-ga4 --days 30  # Pull GA4 data
     python scripts/analytics.py gaps                # Show actionable gaps
     python scripts/analytics.py report              # Generate full insights report
+    python scripts/analytics.py seo-audit           # Audit internal linking structure
 
 Examples:
     # Check what patterns to add
@@ -17,10 +18,14 @@ Examples:
     
     # Generate weekly report
     python scripts/analytics.py report
+    
+    # Audit internal linking
+    python scripts/analytics.py seo-audit
 """
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -314,6 +319,171 @@ These models were searched but not found. Add them to `data/pricing_data.json`:
     print("\n" + report)
 
 
+def seo_audit(args):
+    """Audit internal linking structure of content pages."""
+    content_dir = Path(__file__).parent.parent / "content" / "tools"
+    
+    if not content_dir.exists():
+        print(f"Error: Content directory not found: {content_dir}")
+        sys.exit(1)
+    
+    print("INTERNAL LINKING AUDIT")
+    print("=" * 60)
+    print()
+    
+    # Parse all markdown files
+    pages = {}  # {slug: {"outbound": [], "file": path, "lines": int}}
+    
+    for md_file in sorted(content_dir.glob("*.md")):
+        if md_file.name.startswith("_"):
+            continue  # Skip template
+        
+        content = md_file.read_text()
+        lines = len(content.splitlines())
+        
+        # Extract slug from frontmatter
+        slug_match = re.search(r'^slug:\s*(.+)$', content, re.MULTILINE)
+        slug = slug_match.group(1).strip() if slug_match else md_file.stem
+        
+        # Extract internal links: [text](/ai-slug) or [text](/slug)
+        outbound = re.findall(r'\[.*?\]\((/ai-[^)\s]+|/[^)\s]+)\)', content)
+        # Normalize: keep only /ai-* links and dedupe
+        outbound = [link for link in outbound if link.startswith('/ai-')]
+        
+        pages[slug] = {
+            "outbound": outbound,
+            "file": md_file.name,
+            "lines": lines
+        }
+    
+    # Build inbound link map
+    inbound = {slug: [] for slug in pages}
+    for slug, data in pages.items():
+        for link in data["outbound"]:
+            # Convert /ai-slug to slug
+            target_slug = link.lstrip('/')
+            if target_slug in inbound:
+                inbound[target_slug].append(slug)
+    
+    # Find issues
+    orphans = []  # Pages with 0 inbound links (excluding ai-tools landing)
+    weak = []  # Pages with <3 outbound links
+    duplicates = []  # Pages with duplicate outbound links
+    
+    for slug, data in pages.items():
+        # Check for orphans (ai-tools is expected to have few inbound)
+        inbound_count = len(inbound[slug])
+        if inbound_count == 0 and slug != "ai-tools":
+            orphans.append(slug)
+        
+        # Check for weak outbound
+        unique_outbound = list(set(data["outbound"]))
+        if len(unique_outbound) < 3 and slug != "ai-tools":
+            weak.append((slug, len(unique_outbound)))
+        
+        # Check for duplicates
+        if len(data["outbound"]) != len(unique_outbound):
+            seen = set()
+            dups = []
+            for link in data["outbound"]:
+                if link in seen:
+                    dups.append(link)
+                seen.add(link)
+            duplicates.append((slug, dups))
+    
+    # Print link matrix
+    print("LINK MATRIX")
+    print("-" * 60)
+    print()
+    
+    # Get all slugs for columns
+    all_slugs = sorted(pages.keys())
+    short_names = {s: s.replace('ai-', '').replace('openai-', 'oai-')[:12] for s in all_slugs}
+    
+    # Header
+    header = f"{'From / To':<25}"
+    for slug in all_slugs:
+        header += f" {short_names[slug]:<12}"
+    print(header)
+    print("-" * len(header))
+    
+    # Rows
+    for from_slug in all_slugs:
+        row = f"{short_names[from_slug]:<25}"
+        for to_slug in all_slugs:
+            link = f"/ai-{to_slug}" if not to_slug.startswith('ai-') else f"/{to_slug}"
+            if to_slug.startswith('ai-'):
+                link = f"/{to_slug}"
+            else:
+                link = f"/ai-{to_slug}"
+            
+            # Check if from_slug links to to_slug
+            target = f"/{to_slug}"
+            if target in pages[from_slug]["outbound"]:
+                row += f" {'✓':<12}"
+            elif from_slug == to_slug:
+                row += f" {'-':<12}"
+            else:
+                row += f" {'':<12}"
+        print(row)
+    
+    print()
+    
+    # Print statistics
+    print("STATISTICS")
+    print("-" * 60)
+    print(f"Total pages: {len(pages)}")
+    print()
+    
+    for slug, data in sorted(pages.items()):
+        unique_out = len(set(data["outbound"]))
+        in_count = len(inbound[slug])
+        print(f"  {slug}")
+        print(f"    File: {data['file']} ({data['lines']} lines)")
+        print(f"    Outbound: {unique_out} links | Inbound: {in_count} links")
+    
+    print()
+    
+    # Print issues
+    print("ISSUES FOUND")
+    print("-" * 60)
+    
+    if not orphans and not weak and not duplicates:
+        print("  No issues found!")
+    else:
+        if orphans:
+            print()
+            print("  ORPHAN PAGES (0 inbound links):")
+            for slug in orphans:
+                print(f"    - {slug}")
+            print("    Action: Add links to these pages from related content")
+        
+        if weak:
+            print()
+            print("  WEAK PAGES (<3 outbound links):")
+            for slug, count in weak:
+                print(f"    - {slug} ({count} outbound)")
+            print("    Action: Add more Related Tools links")
+        
+        if duplicates:
+            print()
+            print("  DUPLICATE LINKS:")
+            for slug, dups in duplicates:
+                for dup in dups:
+                    print(f"    - {slug}: duplicate link to {dup}")
+            print("    Action: Remove duplicate links")
+    
+    print()
+    print("=" * 60)
+    
+    # Summary
+    issue_count = len(orphans) + len(weak) + len(duplicates)
+    if issue_count == 0:
+        print("All pages pass linking audit!")
+    else:
+        print(f"Found {issue_count} issue(s) to address.")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Analytics CLI - Pull usage data and generate insights",
@@ -324,6 +494,7 @@ Examples:
   python scripts/analytics.py pull-stats            # Save current stats
   python scripts/analytics.py pull-ga4 --days 30    # Pull GA4 data
   python scripts/analytics.py report                # Generate full report
+  python scripts/analytics.py seo-audit             # Audit internal linking
   python scripts/analytics.py gaps --local          # Check local dev server
         """
     )
@@ -369,6 +540,12 @@ Examples:
     )
     report_parser.add_argument("--local", "-l", action="store_true")
     
+    # seo-audit command
+    seo_audit_parser = subparsers.add_parser(
+        "seo-audit",
+        help="Audit internal linking structure of content pages"
+    )
+    
     args = parser.parse_args()
     
     commands = {
@@ -376,6 +553,7 @@ Examples:
         "gaps": show_gaps,
         "pull-ga4": pull_ga4,
         "report": generate_report,
+        "seo-audit": seo_audit,
     }
     
     commands[args.command](args)

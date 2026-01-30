@@ -270,7 +270,11 @@
 
     <!-- Feedback Section -->
     <div class="tlw-feedback-section">
-      <a href="mailto:aibuzzofficial@gmail.com?subject=Feedback%3A%20AI%20Tools&body=Type%3A%20%5Bbug%2Fsuggestion%2Fother%5D%0A%0AYour%20feedback%3A%0A%0A" class="tlw-feedback-link">Send Feedback</a>
+      <a
+        href="mailto:aibuzzofficial@gmail.com?subject=Feedback%3A%20AI%20Tools&body=Type%3A%20%5Bbug%2Fsuggestion%2Fother%5D%0A%0AYour%20feedback%3A%0A%0A"
+        class="tlw-feedback-link"
+        >Send Feedback</a
+      >
     </div>
   </div>
 </div>
@@ -280,13 +284,35 @@
     "use strict";
 
     // Configuration
-    const API_BASE = window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
+    const API_BASE =
+      window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
 
-    // GA4 Event Tracking Helper
+    // GA4 Event Tracking Helper with retry logic for async gtag loading
     function trackEvent(eventName, params = {}) {
-      if (typeof gtag !== "undefined") {
-        gtag("event", eventName, params);
+      const maxAttempts = 10;
+      const retryDelay = 200; // ms
+      let attempts = 0;
+
+      function tryTrack() {
+        if (typeof gtag === "function") {
+          gtag("event", eventName, params);
+          console.log("[AI-Buzz] Event tracked:", eventName, params);
+          return;
+        }
+
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(tryTrack, retryDelay);
+        } else {
+          console.warn(
+            "[AI-Buzz] gtag not available after retries:",
+            eventName,
+            params,
+          );
+        }
       }
+
+      tryTrack();
     }
 
     // Elements

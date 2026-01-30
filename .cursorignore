@@ -22,12 +22,6 @@ htmlcov/
 dmypy.json
 
 # =============================================================================
-# BINARY & GENERATED FILES
-# =============================================================================
-# Screenshots - binary images not useful for code context
-screenshots/
-
-# =============================================================================
 # ENVIRONMENT & SECRETS
 # =============================================================================
 # Environment files - sensitive and not useful for code understanding

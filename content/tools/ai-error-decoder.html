@@ -1,0 +1,325 @@
+---
+title: AI API Error Decoder - Fix OpenAI, Anthropic, Google Errors
+slug: ai-error-decoder
+status: publish
+page_id: 14735
+seo_title: AI API Error Decoder - Fix OpenAI, Anthropic Errors | Free
+seo_description: Paste any AI API error and get plain English explanation plus fix. Covers rate limits, auth errors, and 50+ common issues.
+widget_endpoint: /error-decoder/widget
+---
+
+<p>Paste any API error message and get a plain English explanation plus actionable steps to fix it. Works with OpenAI, Anthropic, Google, Mistral, and more.</p>
+
+<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+
+<h3>How to Use</h3>
+
+<ol>
+<li>Copy the error message from your terminal, logs, or API response</li>
+<li>Paste it into the decoder above</li>
+<li>Get explanation of what went wrong and steps to fix it</li>
+</ol>
+
+<p>The decoder recognizes 50+ common error patterns across all major AI providers.</p>
+
+<h3>Common Error Types</h3>
+
+<h4>Rate Limit Errors (429)</h4>
+
+<strong>What it means:</strong> You've exceeded the API's rate limits for your tier.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.RateLimitError: Error code: 429 - Rate limit reached for gpt-4o
+</code></pre>
+
+<pre><code>{"error": {"type": "rate_limit_error", "message": "Rate limit reached"}}
+</code></pre>
+
+<strong>Common causes:</strong>
+
+<ul>
+<li>Too many requests per minute (RPM)</li>
+<li>Too many tokens per minute (TPM)</li>
+<li>Burst requests exceeding tier limits</li>
+<li>Free tier restrictions</li>
+</ul>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li><strong>Implement exponential backoff:</strong></li>
+</ol>
+
+<pre><code class="language-python">import time
+import random
+
+def call_with_retry(func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except RateLimitError:
+            wait = (2 ** attempt) + random.uniform(0, 1)
+            time.sleep(wait)
+    raise Exception("Max retries exceeded")
+</code></pre>
+
+<ol>
+<li>Check your current tier limits in your provider's dashboard</li>
+<li>Add request queuing for high-volume applications</li>
+<li>Consider upgrading your tier if consistently hitting limits</li>
+</ol>
+
+<p>See <a href="/ai-openai-429-errors">How to Handle 429 Errors</a> for detailed code examples.</p>
+
+<h4>Authentication Errors (401)</h4>
+
+<strong>What it means:</strong> Your API key is invalid, expired, or missing.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.AuthenticationError: Error code: 401 - Invalid API key
+</code></pre>
+
+<pre><code>{"error": {"type": "authentication_error", "message": "Invalid API Key"}}
+</code></pre>
+
+<strong>Common causes:</strong>
+
+<ul>
+<li>Incorrect API key in environment variables</li>
+<li>Key revoked or expired</li>
+<li>Missing Authorization header</li>
+<li>Wrong header format</li>
+</ul>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li>Verify your API key in your provider's dashboard</li>
+<li>Check environment variables are loaded correctly:</li>
+</ol>
+
+<pre><code class="language-python">import os
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not set")
+</code></pre>
+
+<ol>
+<li>Ensure Authorization header format is correct: <code>Bearer sk-...</code></li>
+<li>Regenerate the key if it's been compromised</li>
+</ol>
+
+<h4>Billing/Quota Errors</h4>
+
+<strong>What it means:</strong> Your account has insufficient credits or payment issues.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.RateLimitError: Error code: 429 - You exceeded your current quota
+</code></pre>
+
+<pre><code>{"error": {"message": "You have exceeded your usage limit"}}
+</code></pre>
+
+<strong>Common causes:</strong>
+
+<ul>
+<li>Account balance depleted</li>
+<li>Payment method expired or failed</li>
+<li>Monthly spending limit reached</li>
+<li>Free tier credits exhausted</li>
+</ul>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li>Check account balance in your provider's dashboard</li>
+<li>Update payment method if expired</li>
+<li>Increase spending limits if needed</li>
+<li>Set up usage alerts to avoid surprises</li>
+</ol>
+
+<h4>Model Errors</h4>
+
+<strong>What it means:</strong> The requested model doesn't exist, is deprecated, or unavailable.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.NotFoundError: Error code: 404 - The model 'gpt-5' does not exist
+</code></pre>
+
+<pre><code>{"error": {"message": "Model not found: gpt-3.5-turbo-0301"}}
+</code></pre>
+
+<strong>Common causes:</strong>
+
+<ul>
+<li>Typo in model name (e.g., "gpt-4" vs "gpt-4o")</li>
+<li>Model deprecated (old snapshot versions)</li>
+<li>Regional availability restrictions</li>
+<li>Model not available for your tier</li>
+</ul>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li>Verify model name spelling</li>
+<li>Use current model names:</li>
+</ol>
+<ul>
+<li>OpenAI: <code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>o1</code>, <code>o1-mini</code></li>
+<li>Anthropic: <code>claude-3-5-sonnet-20241022</code>, <code>claude-3-5-haiku-20241022</code></li>
+<li>Google: <code>gemini-1.5-pro</code>, <code>gemini-1.5-flash</code></li>
+</ul>
+<ol>
+<li>Check your provider's model deprecation schedule</li>
+<li>Check regional availability for your account</li>
+</ol>
+
+<h4>Token/Context Limit Errors</h4>
+
+<strong>What it means:</strong> Your request exceeds the model's context window.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.BadRequestError: This model's maximum context length is 128000 tokens
+</code></pre>
+
+<pre><code>{"error": {"message": "prompt is too long: 150000 tokens &gt; 128000 maximum"}}
+</code></pre>
+
+<strong>Common causes:</strong>
+
+<ul>
+<li>Input too long for model's context window</li>
+<li>Accumulated conversation history too large</li>
+<li>System prompt + user prompt exceeds limit</li>
+</ul>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li>Reduce input length or split into chunks</li>
+<li>Summarize conversation history periodically</li>
+<li>Use models with larger context windows:</li>
+</ol>
+<ul>
+<li>GPT-4o: 128K tokens</li>
+<li>Claude 3.5 Sonnet: 200K tokens</li>
+<li>Gemini 1.5 Pro: 2M tokens</li>
+</ul>
+<ol>
+<li>Truncate older messages in conversations</li>
+</ol>
+
+<h4>Server Errors (500/503)</h4>
+
+<strong>What it means:</strong> The API provider is having internal issues.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.InternalServerError: Error code: 500 - Internal server error
+</code></pre>
+
+<pre><code>{"error": {"type": "server_error", "message": "Internal error"}}
+</code></pre>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li>Check <a href="/ai-status">API Status</a> to see if there's an outage</li>
+<li>Implement retry logic with exponential backoff</li>
+<li>Wait and try again in a few minutes</li>
+<li>If persistent, check the provider's status page</li>
+</ol>
+
+<h4>Bad Request Errors (400)</h4>
+
+<strong>What it means:</strong> Your request format is invalid.
+
+<strong>Example errors:</strong>
+
+<pre><code>openai.BadRequestError: Error code: 400 - Invalid request body
+</code></pre>
+
+<strong>Common causes:</strong>
+
+<ul>
+<li>Missing required fields</li>
+<li>Invalid JSON format</li>
+<li>Wrong parameter types</li>
+<li>Invalid enum values</li>
+</ul>
+
+<strong>How to fix:</strong>
+
+<ol>
+<li>Validate your request against the API documentation</li>
+<li>Check JSON syntax is valid</li>
+<li>Ensure all required fields are present</li>
+<li>Verify parameter types (strings vs numbers vs arrays)</li>
+</ol>
+
+<h3>Provider-Specific Notes</h3>
+
+<h4>OpenAI</h4>
+
+<ul>
+<li>Rate limits are tier-based (Tier 1-5 based on spending)</li>
+<li>Different models have different limits</li>
+<li>Check limits at <a href="https://platform.openai.com/account/limits">platform.openai.com/account/limits</a></li>
+</ul>
+
+<h4>Anthropic</h4>
+
+<ul>
+<li>Uses 529 status code for "overloaded" (treat like 503)</li>
+<li>Message limits separate from token limits</li>
+<li>Check usage at <a href="https://console.anthropic.com">console.anthropic.com</a></li>
+</ul>
+
+<h4>Google AI</h4>
+
+<ul>
+<li>Quota errors different from rate limits</li>
+<li>Regional restrictions may apply</li>
+<li>Check quotas in Google Cloud Console</li>
+</ul>
+
+<h3>FAQ</h3>
+
+<h4>What errors can this decode?</h4>
+
+<p>Rate limits, authentication failures, invalid requests, model errors, token limits, billing issues, and more. We cover the most common errors from OpenAI, Anthropic, Google AI, and Mistral.</p>
+
+<h4>What if my error isn't recognized?</h4>
+
+<p>You'll get general troubleshooting steps based on the error code. The tool will suggest where to find help, and you can subscribe for updates when we add new patterns.</p>
+
+<h4>Do you store my error messages?</h4>
+
+<p>No. Error decoding happens client-side. We don't log or store your error messages.</p>
+
+<h4>How do I prevent rate limit errors?</h4>
+
+<p>Implement rate limiting on your end, use exponential backoff for retries, consider the Batch API for non-urgent tasks, and upgrade your tier if you consistently hit limits. See <a href="/ai-openai-429-errors">How to Handle 429 Errors</a> for code examples.</p>
+
+<h4>Why am I getting authentication errors?</h4>
+
+<p>Your API key may be invalid, expired, or not loaded correctly. Check your environment variables, verify the key in your provider's dashboard, and ensure the Authorization header format is correct.</p>
+
+<h4>Is this tool free?</h4>
+
+<p>Yes, completely free with no signup required.</p>
+
+<h3>Related Tools</h3>
+
+<ul>
+<li><a href="/ai-openai-rate-limits">OpenAI Rate Limits Explained</a> - Understand your rate limits by tier</li>
+<li><a href="/ai-openai-429-errors">How to Handle OpenAI 429 Errors</a> - Fix rate limit issues with code examples</li>
+<li><a href="/ai-status">AI Status Page</a> - Check if the API is down before debugging your code</li>
+<li><a href="/ai-pricing-calculator">AI Pricing Calculator</a> - Compare costs if you're hitting billing limits</li>
+<li><a href="/ai-tools">All AI Developer Tools</a> - Browse all free tools</li>
+</ul>

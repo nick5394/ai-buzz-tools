@@ -220,6 +220,9 @@ def pull_funnel(days: int = 30) -> Dict[str, Any]:
         client = BetaAnalyticsDataClient()
         
         # Try with tool_name dimension first, fall back to eventName only
+        has_tool_name = False
+        tool_name_error = None
+        
         try:
             request = RunReportRequest(
                 property=f"properties/{PROPERTY_ID}",
@@ -237,8 +240,21 @@ def pull_funnel(days: int = 30) -> Dict[str, Any]:
             )
             response = client.run_report(request)
             has_tool_name = True
-        except Exception:
-            # tool_name not available, use eventName only
+        except Exception as e:
+            error_str = str(e)
+            # Check if this is the "dimension not valid" error
+            if "not a valid dimension" in error_str or "customEvent:tool_name" in error_str:
+                tool_name_error = (
+                    "Custom dimension 'tool_name' not configured in GA4. "
+                    "To fix: GA4 Admin > Custom definitions > Create custom dimension "
+                    "with name 'tool_name', scope 'Event', and event parameter 'tool_name'. "
+                    "See WORDPRESS_SETUP.md for detailed instructions."
+                )
+                logger.warning(f"tool_name dimension not configured: {tool_name_error}")
+            else:
+                logger.info(f"tool_name dimension query failed, falling back: {e}")
+            
+            # Fall back to eventName only
             request = RunReportRequest(
                 property=f"properties/{PROPERTY_ID}",
                 date_ranges=[DateRange(
@@ -253,7 +269,6 @@ def pull_funnel(days: int = 30) -> Dict[str, Any]:
                 ],
             )
             response = client.run_report(request)
-            has_tool_name = False
         
         # Build funnel data
         funnels: Dict[str, Dict[str, int]] = {}
@@ -290,13 +305,20 @@ def pull_funnel(days: int = 30) -> Dict[str, Any]:
                 data["email_conversion_rate"] = 0
                 data["share_conversion_rate"] = 0
         
-        return {
+        # Build result with helpful notes
+        result = {
             "success": True,
             "period": f"last_{days}_days",
             "pulled_at": datetime.utcnow().isoformat() + "Z",
             "funnels": funnels,
-            "note": "tool_name dimension not configured - showing aggregate data" if not has_tool_name else None
         }
+        
+        if not has_tool_name:
+            result["note"] = "Showing aggregate data only (not broken down by tool)."
+            if tool_name_error:
+                result["setup_required"] = tool_name_error
+        
+        return result
         
     except Exception as e:
         logger.error(f"Failed to pull GA4 funnel: {e}")
