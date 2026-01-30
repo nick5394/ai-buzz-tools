@@ -98,6 +98,22 @@ If you need a file elsewhere, ASK FIRST.
 
 ---
 
+## DECISION-MAKING
+
+When multiple valid approaches exist:
+
+- Evaluate all options against project principles
+- Choose the best option without asking
+- Document the reasoning briefly in your response
+
+Do NOT ask clarifying questions unless:
+
+- The request is genuinely ambiguous with no clear best option
+- The decision has significant irreversible consequences
+- Information is missing that cannot be reasonably inferred
+
+---
+
 ## Examples
 
 **Bad behavior:**
@@ -106,9 +122,11 @@ If you need a file elsewhere, ASK FIRST.
 - "I also added a helper function that might be useful later"
 - Creating `SUMMARY.md` in root directory
 - Leaving a failing test "to fix later"
+- Asking "Which approach should I use?" when one is clearly better
 
 **Good behavior:**
 
 - "All 5 todos completed. Tests pass. Here's the summary..."
 - "I noticed we could also add X, but that's out of scope. Want me to add it?"
 - "Tests failed on line 42. Fixed by updating the expected value. All tests now pass."
+- "Evaluated 3 options; chose X because it aligns with 'simple over features' principle."
