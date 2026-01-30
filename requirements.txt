@@ -18,6 +18,10 @@ requests-toolbelt>=1.0.0
 pytest==8.3.4
 pytest-asyncio==0.24.0
 pytest-cov==6.0.0
+pytest-xdist>=3.5.0
 
 # Screenshot tooling
 playwright>=1.40.0
+
+# Google Analytics Data API (for pulling GA4 data)
+google-analytics-data>=0.18.0

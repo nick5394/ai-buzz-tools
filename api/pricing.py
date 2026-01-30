@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, EmailStr
 
 from api.shared import load_json_data, subscribe_email, load_widget
+from api.analytics import track_pricing_calculation, track_model_not_found
 
 logger = logging.getLogger(__name__)
 
@@ -232,6 +233,9 @@ async def calculate_pricing(request: CalculateRequest):
         input_tokens = request.input_tokens_monthly
         output_tokens = request.output_tokens_monthly
         selected_model = request.selected_model
+        
+        # Track usage for analytics
+        track_pricing_calculation(input_tokens, output_tokens)
         
         results = []
         gpt4o_cost = None

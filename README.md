@@ -20,8 +20,16 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Install Playwright browsers (for widget tests)
+playwright install chromium
+
+# Run tests
+make test
+# or: pytest -v
+
 # Start server
-uvicorn main:app --reload
+make server
+# or: uvicorn main:app --reload
 
 # Test
 curl http://localhost:8000/
@@ -58,7 +66,10 @@ curl http://localhost:8000/
 Widgets are self-contained HTML files served via `/widget` endpoints. They're embedded in WordPress using a JavaScript loader:
 
 ```html
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 ```
 
 The loader fetches widget HTML client-side, bypassing WordPress page caching. Available tools: `pricing`, `status`, `error-decoder`.
@@ -94,19 +105,144 @@ See [WORDPRESS_SETUP.md](WORDPRESS_SETUP.md) for complete embedding guide.
 
 - `GET /embed.js` - Universal JavaScript loader for embedding widgets
 
+### Analytics
+
+- `GET /analytics/stats` - Get current usage stats (in-memory, resets on deploy)
+- `GET /analytics/gaps` - Get actionable gaps (what to build next)
+- `GET /analytics/reset` - Reset stats (for testing)
+
+## Analytics & Usage Tracking
+
+The analytics system helps you understand how users interact with tools and identify gaps (things users try that don't work).
+
+### Quick Start
+
+```bash
+# See what patterns/models to add
+python scripts/analytics.py gaps
+
+# Pull current stats before a deploy
+python scripts/analytics.py pull-stats
+
+# Generate full insights report
+python scripts/analytics.py report
+
+# Pull GA4 data (requires setup)
+python scripts/analytics.py pull-ga4 --days 30
+```
+
+### What Gets Tracked
+
+| Tool | Metrics | Gap Detection |
+|------|---------|---------------|
+| Error Decoder | Total decodes, match rate | Unmatched errors → patterns to add |
+| Pricing Calculator | Calculations, token buckets | Models not found → pricing to add |
+| Status Page | Provider checks | Most checked providers |
+
+**Privacy**: Error messages are hashed, token counts are bucketed. No user identifiers stored.
+
+### GA4 Setup (Optional)
+
+To pull historical data from Google Analytics:
+
+1. **Enable API**: Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Enable "Google Analytics Data API"
+
+2. **Create Service Account**: IAM & Admin → Service Accounts → Create → Download JSON key
+
+3. **Grant Access**: In GA4 Admin → Property Access Management → Add service account email as "Viewer"
+
+4. **Set Environment Variables**:
+   ```bash
+   export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
+   export GA4_PROPERTY_ID="your-property-id"  # Found in GA4 Admin → Property Settings
+   ```
+
+5. **Test**:
+   ```bash
+   python scripts/analytics.py pull-ga4 --days 7
+   ```
+
+Data is saved to `data/analytics/` for local analysis.
+
 ## Testing
 
-Run tests with coverage:
+### Quick Start
+
+**Using Make (recommended):**
 
 ```bash
-pytest
+# Install dependencies and browsers
+make install
+make install-browsers
+
+# Run all tests
+make test
+
+# Run with coverage
+make coverage
 ```
 
-Run tests without coverage:
+**Using test script:**
 
 ```bash
-pytest --no-cov
+# Install dependencies and browsers, then run all tests
+./scripts/run_tests.sh --install-deps --install-browsers
+
+# Run tests only (assumes dependencies installed)
+./scripts/run_tests.sh
+
+# Run only unit tests
+./scripts/run_tests.sh --unit-only
+
+# Run only widget integration tests
+./scripts/run_tests.sh --widget-only
 ```
+
+**Using pytest directly:**
+
+```bash
+# Run all tests
+pytest -v
+
+# Run unit tests only
+pytest tests/test_*.py -v -k "not test_widget_integration"
+
+# Run widget integration tests only
+pytest tests/test_widget_integration.py -v
+
+# Run with coverage
+pytest --cov=api --cov-report=term-missing --cov-report=html
+```
+
+### Test Widgets Locally
+
+Test widgets in a browser without deploying:
+
+```bash
+# Start local server and open widgets
+make test-local
+# or
+./scripts/test_widgets_locally.sh
+```
+
+Then open:
+
+- `http://localhost:8765/error-decoder/widget`
+- `http://localhost:8765/pricing/widget`
+- `http://localhost:8765/status/widget`
+
+### CI/CD
+
+Tests run automatically on:
+
+- Push to `main` branch
+- Pull requests to `main` branch
+
+The GitHub Actions workflow runs:
+
+- Unit tests
+- Widget integration tests (Playwright)
+- Coverage reports
 
 See [TESTING.md](TESTING.md) for comprehensive testing guide and checklist.
 

@@ -15,6 +15,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, EmailStr
 
 from api.shared import load_json_data, subscribe_email, load_widget
+from api.analytics import track_status_check
 
 logger = logging.getLogger(__name__)
 
@@ -205,6 +206,10 @@ async def check_all_providers() -> StatusResponse:
             for provider_id, provider_config in providers_config.items()
         ]
         provider_statuses = await asyncio.gather(*tasks)
+    
+    # Track usage for analytics
+    for provider_status in provider_statuses:
+        track_status_check(provider_status.id)
     
     # Sort by status (down first, then degraded, then operational) then by name
     status_order = {"down": 0, "degraded": 1, "operational": 2}

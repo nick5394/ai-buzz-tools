@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, EmailStr
 
 from api.shared import load_json_data, subscribe_email, load_widget
+from api.analytics import track_error_decode
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +160,13 @@ async def decode_error_message(request: DecodeRequest):
         patterns = error_data.get("patterns", [])
         
         decoded = decode_error(request.error_message, patterns)
+        
+        # Track usage for analytics
+        track_error_decode(
+            error_message=request.error_message,
+            matched=decoded is not None,
+            pattern_id=decoded.pattern.id if decoded else None
+        )
         
         suggestions = []
         if not decoded:
