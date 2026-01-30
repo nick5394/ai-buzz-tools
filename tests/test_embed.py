@@ -55,3 +55,33 @@ class TestEmbedScript:
         # Check for retry logic
         assert "retryCount" in content or "retry" in content.lower()
         assert "setTimeout" in content
+    
+    def test_embed_script_has_script_execution_fix(self, client):
+        """Test that embed.js re-executes scripts after innerHTML injection.
+        
+        Scripts added via innerHTML don't execute by default. The embed.js
+        must re-create script elements to make them execute.
+        """
+        response = client.get("/embed.js")
+        
+        assert response.status_code == status.HTTP_200_OK
+        content = response.text
+        
+        # Check that the script execution fix is present
+        assert "querySelectorAll('script')" in content, "Should query for script tags"
+        assert "createElement('script')" in content, "Should create new script elements"
+        assert "replaceChild" in content, "Should replace old scripts with new ones"
+    
+    def test_embed_script_has_exponential_backoff(self, client):
+        """Test that embed.js uses exponential backoff for retries."""
+        response = client.get("/embed.js")
+        
+        assert response.status_code == status.HTTP_200_OK
+        content = response.text
+        
+        # Check for exponential backoff delays
+        assert "retryDelays" in content, "Should have retryDelays array"
+        assert "5000" in content, "Should have 5 second first retry"
+        assert "10000" in content, "Should have 10 second second retry"
+        assert "20000" in content, "Should have 20 second third retry"
+        assert "maxRetries = 3" in content or "maxRetries=3" in content, "Should have 3 max retries"
