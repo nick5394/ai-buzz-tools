@@ -66,11 +66,21 @@ class TestToolsLandingWidget:
         # Check for inline scripts
         assert "<script>" in html
         # Check that the widget is not loading external stylesheets (CDNs)
-        # Share URLs to ai-buzz.com are allowed
+        # Share URLs to ai-buzz.com are allowed, mailto links are allowed
         import re
         external_links = re.findall(r'href="(https?://[^"]+)"', html)
         for link in external_links:
             assert "ai-buzz.com" in link, f"External link found: {link}"
+
+    def test_widget_has_feedback_mailto_link(self, client):
+        """Test that widget has a feedback mailto link with correct format."""
+        response = client.get("/tools/widget")
+        html = response.text
+        
+        # Check for feedback mailto link
+        assert 'mailto:aibuzzofficial@gmail.com' in html
+        assert 'Send Feedback' in html
+        assert 'tlw-feedback-link' in html
 
 
 class TestToolsLandingIntegration:

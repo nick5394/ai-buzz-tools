@@ -941,3 +941,99 @@ class TestWidgetMobileViewport:
         box = await widget.bounding_box()
         assert box is not None
         assert box["width"] <= 375
+
+
+# Feedback Mailto Link Tests
+
+class TestWidgetFeedbackLinks:
+    """Test that widgets have proper feedback mailto links.
+    
+    Each widget should have a "Send Feedback" mailto link that:
+    - Points to aibuzzofficial@gmail.com
+    - Has a pre-filled subject with tool name
+    - Has a pre-filled body template
+    """
+    
+    @pytest.mark.asyncio
+    async def test_error_decoder_feedback_link(self, page: Page, test_server):
+        """Test Error Decoder widget has correct feedback mailto link."""
+        await load_widget(page, "error-decoder", test_server)
+        
+        # Find feedback link
+        feedback_link = page.locator(".edw-feedback-link")
+        assert await feedback_link.is_visible(), "Feedback link should be visible"
+        
+        # Verify link text
+        link_text = await feedback_link.text_content()
+        assert "Send Feedback" in link_text
+        
+        # Verify href is a mailto link with correct email
+        href = await feedback_link.get_attribute("href")
+        assert href is not None
+        assert href.startswith("mailto:aibuzzofficial@gmail.com")
+        assert "subject=" in href
+        assert "Error%20Decoder" in href or "Error+Decoder" in href
+    
+    @pytest.mark.asyncio
+    async def test_pricing_calculator_feedback_link(self, page: Page, test_server):
+        """Test Pricing Calculator widget has correct feedback mailto link."""
+        await load_widget(page, "pricing", test_server)
+        
+        # Calculate first to show results section (where feedback link is)
+        await page.locator("#pcw-input-tokens").fill("1")
+        await page.locator("#pcw-output-tokens").fill("0.5")
+        await page.locator("#pcw-calculate-btn").click()
+        await wait_for_results(page, "pricing")
+        
+        # Find feedback link
+        feedback_link = page.locator(".pcw-feedback-link")
+        assert await feedback_link.is_visible(), "Feedback link should be visible"
+        
+        # Verify link text
+        link_text = await feedback_link.text_content()
+        assert "Send Feedback" in link_text
+        
+        # Verify href is a mailto link with correct email
+        href = await feedback_link.get_attribute("href")
+        assert href is not None
+        assert href.startswith("mailto:aibuzzofficial@gmail.com")
+        assert "subject=" in href
+        assert "Pricing%20Calculator" in href or "Pricing+Calculator" in href
+    
+    @pytest.mark.asyncio
+    async def test_status_page_feedback_link(self, page: Page, test_server):
+        """Test Status Page widget has correct feedback mailto link."""
+        # Wait for auto-fetch API response (widget fetches on load)
+        async with page.expect_response(lambda r: "/status/check" in r.url and r.status == 200):
+            await load_widget(page, "status", test_server)
+        
+        # Wait for content to load
+        await wait_for_results(page, "status")
+        
+        # Find feedback link
+        feedback_link = page.locator(".spw-feedback-link")
+        assert await feedback_link.is_visible(), "Feedback link should be visible"
+        
+        # Verify link text
+        link_text = await feedback_link.text_content()
+        assert "Send Feedback" in link_text
+        
+        # Verify href is a mailto link with correct email
+        href = await feedback_link.get_attribute("href")
+        assert href is not None
+        assert href.startswith("mailto:aibuzzofficial@gmail.com")
+        assert "subject=" in href
+        assert "Status%20Page" in href or "Status+Page" in href
+    
+    @pytest.mark.asyncio
+    async def test_feedback_links_have_body_template(self, page: Page, test_server):
+        """Test that feedback mailto links include body template."""
+        await load_widget(page, "error-decoder", test_server)
+        
+        feedback_link = page.locator(".edw-feedback-link")
+        href = await feedback_link.get_attribute("href")
+        
+        # Should have body parameter with template
+        assert "body=" in href
+        # Should include feedback type prompt
+        assert "bug" in href.lower() or "suggestion" in href.lower()

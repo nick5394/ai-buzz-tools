@@ -357,11 +357,23 @@ class TestPricingWidget:
         # Check for inline scripts
         assert "<script>" in html
         # Check that the widget is not loading external stylesheets (CDNs)
-        # Share URLs to ai-buzz.com are allowed
+        # Share URLs to ai-buzz.com are allowed, mailto links are allowed
         import re
         external_links = re.findall(r'href="(https?://[^"]+)"', html)
         for link in external_links:
             assert "ai-buzz.com" in link, f"External link found: {link}"
+
+    def test_widget_has_feedback_mailto_link(self, client):
+        """Test that widget has a feedback mailto link with correct format."""
+        response = client.get("/pricing/widget")
+        html = response.text
+        
+        # Check for feedback mailto link
+        assert 'mailto:aibuzzofficial@gmail.com' in html
+        assert 'Send Feedback' in html
+        assert 'pcw-feedback-link' in html
+        # Check subject contains tool name
+        assert 'Pricing%20Calculator' in html or 'Pricing+Calculator' in html
 
 
 class TestPricingIntegration:
