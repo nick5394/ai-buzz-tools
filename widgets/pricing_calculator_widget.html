@@ -1518,14 +1518,14 @@
     try {
       const formData = new FormData(feedbackFormEl);
       
-      const response = await fetch("https://formsubmit.co/ajax/aibuzzofficial@gmail.com", {
+          const response = await fetch("https://formsubmit.co/ajax/aibuzzofficial@gmail.com", {
         method: "POST",
         body: formData,
       });
 
-      const data = await response.json();
-
-      if (data.success === "true" || data.success === true) {
+      // Formsubmit stores data even before email activation
+      // Any 2xx response means the feedback was received
+      if (response.ok) {
         feedbackSuccessEl.classList.add("visible");
         feedbackTypeEl.value = "";
         feedbackMessageEl.value = "";

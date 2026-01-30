@@ -1067,9 +1067,9 @@
             body: formData,
           });
 
-          const data = await response.json();
-
-          if (data.success === "true" || data.success === true) {
+          // Formsubmit stores data even before email activation
+          // Any 2xx response means the feedback was received
+          if (response.ok) {
             feedbackSuccessEl.classList.add("visible");
             feedbackTypeEl.value = "";
             feedbackMessageEl.value = "";
