@@ -1,13 +1,17 @@
 {
   "_metadata": {
-    "last_updated": "2026-01-29",
+    "last_updated": "2026-01-31",
     "update_frequency": "monthly",
     "notes": "Common error patterns for AI API providers. Patterns are matched using case-insensitive substring matching.",
     "sources": {
       "openai": "https://platform.openai.com/docs/guides/error-codes",
       "anthropic": "https://docs.anthropic.com/claude/reference/errors",
       "google": "https://ai.google.dev/gemini-api/docs/errors",
-      "mistral": "https://docs.mistral.ai/api/#errors"
+      "mistral": "https://docs.mistral.ai/api/#errors",
+      "cohere": "https://docs.cohere.com/reference/errors",
+      "bedrock": "https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting.html",
+      "replicate": "https://replicate.com/docs/errors",
+      "huggingface": "https://huggingface.co/docs/api-inference/detailed_parameters"
     }
   },
   "patterns": [
@@ -311,6 +315,327 @@
       "severity": "error",
       "common": false,
       "docs_url": null
+    },
+    {
+      "id": "mistral_rate_limit",
+      "provider": "Mistral",
+      "provider_id": "mistral",
+      "error_keywords": [
+        "rate limit",
+        "429",
+        "too many requests",
+        "rate_limit_exceeded"
+      ],
+      "title": "Rate Limit Exceeded",
+      "explanation": "You've exceeded Mistral's rate limit for your API tier.",
+      "fix": "1. Wait a few seconds and retry\n2. Implement exponential backoff\n3. Check your tier limits in the Mistral console\n4. Upgrade your plan for higher limits",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://docs.mistral.ai/api/#errors"
+    },
+    {
+      "id": "mistral_auth",
+      "provider": "Mistral",
+      "provider_id": "mistral",
+      "error_keywords": [
+        "unauthorized",
+        "401",
+        "invalid api key",
+        "authentication"
+      ],
+      "title": "Authentication Failed",
+      "explanation": "Your Mistral API key is invalid or missing.",
+      "fix": "1. Verify API key in Mistral console\n2. Check environment variables (MISTRAL_API_KEY)\n3. Regenerate key if needed\n4. Ensure key has proper permissions",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.mistral.ai/api/"
+    },
+    {
+      "id": "mistral_context_length",
+      "provider": "Mistral",
+      "provider_id": "mistral",
+      "error_keywords": [
+        "context length",
+        "too long",
+        "maximum tokens",
+        "token limit"
+      ],
+      "title": "Context Length Exceeded",
+      "explanation": "Your prompt exceeds the model's maximum context window.",
+      "fix": "1. Reduce prompt length\n2. Use a model with larger context (Mistral Large supports 128K)\n3. Summarize conversation history\n4. Split into multiple requests",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.mistral.ai/guides/model-selection/"
+    },
+    {
+      "id": "bedrock_throttling",
+      "provider": "AWS Bedrock",
+      "provider_id": "bedrock",
+      "error_keywords": [
+        "throttlingexception",
+        "rate exceeded",
+        "throttled",
+        "too many requests"
+      ],
+      "title": "Bedrock Throttling",
+      "explanation": "AWS Bedrock is throttling your requests due to rate limits.",
+      "fix": "1. Implement retry with exponential backoff\n2. Request quota increase in AWS console\n3. Check provisioned throughput settings\n4. Use batch processing for bulk requests",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html"
+    },
+    {
+      "id": "bedrock_access_denied",
+      "provider": "AWS Bedrock",
+      "provider_id": "bedrock",
+      "error_keywords": [
+        "accessdeniedexception",
+        "access denied",
+        "not authorized",
+        "permission denied"
+      ],
+      "title": "Access Denied",
+      "explanation": "Your AWS credentials don't have permission to access Bedrock.",
+      "fix": "1. Check IAM permissions include bedrock:InvokeModel\n2. Verify model access is enabled in Bedrock console\n3. Check AWS region supports the model\n4. Ensure credentials are properly configured",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html"
+    },
+    {
+      "id": "bedrock_validation",
+      "provider": "AWS Bedrock",
+      "provider_id": "bedrock",
+      "error_keywords": [
+        "validationexception",
+        "validation error",
+        "invalid parameter",
+        "malformed"
+      ],
+      "title": "Validation Error",
+      "explanation": "Your request contains invalid parameters for the Bedrock model.",
+      "fix": "1. Check request body matches model's expected format\n2. Verify parameter names and types\n3. Each model (Claude, Titan, etc.) has different parameters\n4. Review AWS Bedrock API documentation",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html"
+    },
+    {
+      "id": "bedrock_model_access",
+      "provider": "AWS Bedrock",
+      "provider_id": "bedrock",
+      "error_keywords": [
+        "model access",
+        "not enabled",
+        "enable model",
+        "model not available"
+      ],
+      "title": "Model Not Enabled",
+      "explanation": "The requested model hasn't been enabled in your AWS Bedrock account.",
+      "fix": "1. Go to AWS Bedrock console → Model access\n2. Request access to the model\n3. Wait for access approval (some models require manual approval)\n4. Check model is available in your region",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html"
+    },
+    {
+      "id": "cohere_rate_limit",
+      "provider": "Cohere",
+      "provider_id": "cohere",
+      "error_keywords": [
+        "rate limit",
+        "429",
+        "too many requests"
+      ],
+      "title": "Rate Limit Exceeded",
+      "explanation": "You've hit Cohere's rate limit for your API tier.",
+      "fix": "1. Wait and retry with exponential backoff\n2. Upgrade your plan for higher limits\n3. Implement request queuing\n4. Check rate limits in Cohere dashboard",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://docs.cohere.com/reference/errors"
+    },
+    {
+      "id": "cohere_auth",
+      "provider": "Cohere",
+      "provider_id": "cohere",
+      "error_keywords": [
+        "unauthorized",
+        "401",
+        "invalid api key",
+        "authentication"
+      ],
+      "title": "Authentication Failed",
+      "explanation": "Your Cohere API key is invalid or missing.",
+      "fix": "1. Verify API key in Cohere dashboard\n2. Check environment variables (COHERE_API_KEY)\n3. Regenerate key if needed\n4. Ensure correct Authorization header format",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.cohere.com/reference/authentication"
+    },
+    {
+      "id": "cohere_invalid_request",
+      "provider": "Cohere",
+      "provider_id": "cohere",
+      "error_keywords": [
+        "invalid request",
+        "400",
+        "bad request",
+        "validation"
+      ],
+      "title": "Invalid Request",
+      "explanation": "Your request contains invalid parameters for Cohere's API.",
+      "fix": "1. Check request parameters match API spec\n2. Verify model name is correct (command, command-r, etc.)\n3. Ensure required fields are present\n4. Check Cohere API documentation",
+      "severity": "error",
+      "common": false,
+      "docs_url": "https://docs.cohere.com/reference/chat"
+    },
+    {
+      "id": "openai_model_specific",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "does not exist",
+        "404",
+        "model_not_found",
+        "gpt-4"
+      ],
+      "title": "Model Not Found",
+      "explanation": "The requested OpenAI model doesn't exist or isn't available to you.",
+      "fix": "1. Check model name spelling (gpt-4o not gpt-4-o)\n2. Verify model access in your API tier\n3. Check deprecation schedule for old models\n4. Use the models endpoint to list available models",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://platform.openai.com/docs/models"
+    },
+    {
+      "id": "openai_content_filter",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "content_filter",
+        "content policy",
+        "flagged",
+        "moderation"
+      ],
+      "title": "Content Flagged",
+      "explanation": "Your request was flagged by OpenAI's content moderation system.",
+      "fix": "1. Review prompt for policy violations\n2. Modify language to avoid triggering filters\n3. Check OpenAI usage policies\n4. Use the moderation endpoint to pre-check content",
+      "severity": "warning",
+      "common": false,
+      "docs_url": "https://platform.openai.com/docs/guides/moderation"
+    },
+    {
+      "id": "openai_org_quota",
+      "provider": "OpenAI",
+      "provider_id": "openai",
+      "error_keywords": [
+        "organization",
+        "org quota",
+        "organization_quota_exceeded",
+        "org limit"
+      ],
+      "title": "Organization Quota Exceeded",
+      "explanation": "Your organization has exceeded its usage quota.",
+      "fix": "1. Check organization billing in OpenAI dashboard\n2. Contact organization admin to increase limits\n3. Wait for quota reset (usually monthly)\n4. Review usage across all org members",
+      "severity": "error",
+      "common": false,
+      "docs_url": "https://platform.openai.com/account/billing"
+    },
+    {
+      "id": "anthropic_context_length",
+      "provider": "Anthropic",
+      "provider_id": "anthropic",
+      "error_keywords": [
+        "prompt is too long",
+        "max tokens",
+        "context length",
+        "token limit"
+      ],
+      "title": "Context Length Exceeded",
+      "explanation": "Your prompt exceeds Claude's context window.",
+      "fix": "1. Reduce prompt length\n2. Summarize conversation history\n3. Claude 3.5 Sonnet supports 200K tokens\n4. Use the tokenizer to count tokens before sending",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.anthropic.com/claude/reference/errors"
+    },
+    {
+      "id": "anthropic_invalid_request",
+      "provider": "Anthropic",
+      "provider_id": "anthropic",
+      "error_keywords": [
+        "invalid_request_error",
+        "400",
+        "bad request",
+        "validation"
+      ],
+      "title": "Invalid Request",
+      "explanation": "Your request contains invalid parameters for Claude's API.",
+      "fix": "1. Check message format (role/content structure)\n2. Verify model name is correct\n3. Ensure max_tokens is specified\n4. Review Anthropic API documentation",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://docs.anthropic.com/claude/reference/messages_post"
+    },
+    {
+      "id": "replicate_rate_limit",
+      "provider": "Replicate",
+      "provider_id": "replicate",
+      "error_keywords": [
+        "rate limit",
+        "429",
+        "too many requests"
+      ],
+      "title": "Rate Limit Exceeded",
+      "explanation": "You've exceeded Replicate's rate limit.",
+      "fix": "1. Wait and retry with exponential backoff\n2. Upgrade your plan for higher limits\n3. Use prediction webhooks instead of polling\n4. Batch requests where possible",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://replicate.com/docs/reference/http#rate-limits"
+    },
+    {
+      "id": "replicate_auth",
+      "provider": "Replicate",
+      "provider_id": "replicate",
+      "error_keywords": [
+        "unauthorized",
+        "401",
+        "invalid token",
+        "authentication"
+      ],
+      "title": "Authentication Failed",
+      "explanation": "Your Replicate API token is invalid or missing.",
+      "fix": "1. Verify token in Replicate dashboard\n2. Check environment variables (REPLICATE_API_TOKEN)\n3. Ensure Authorization header format: 'Token <api_token>'\n4. Regenerate token if needed",
+      "severity": "error",
+      "common": true,
+      "docs_url": "https://replicate.com/docs/reference/http#authentication"
+    },
+    {
+      "id": "huggingface_rate_limit",
+      "provider": "HuggingFace",
+      "provider_id": "huggingface",
+      "error_keywords": [
+        "rate limit",
+        "429",
+        "too many requests",
+        "exceeded"
+      ],
+      "title": "Rate Limit Exceeded",
+      "explanation": "You've hit HuggingFace Inference API rate limits.",
+      "fix": "1. Wait and retry with exponential backoff\n2. Use a Pro account for higher limits\n3. Deploy your own inference endpoint\n4. Cache responses where possible",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://huggingface.co/docs/api-inference/rate-limits"
+    },
+    {
+      "id": "huggingface_model_loading",
+      "provider": "HuggingFace",
+      "provider_id": "huggingface",
+      "error_keywords": [
+        "model loading",
+        "loading",
+        "503",
+        "currently loading"
+      ],
+      "title": "Model Loading",
+      "explanation": "The model is still loading and not ready for inference.",
+      "fix": "1. Wait 20-60 seconds for model to load\n2. Retry the request after waiting\n3. Use dedicated inference endpoints for instant availability\n4. Check model status before sending requests",
+      "severity": "warning",
+      "common": true,
+      "docs_url": "https://huggingface.co/docs/api-inference/detailed_parameters"
     }
   ]
 }
