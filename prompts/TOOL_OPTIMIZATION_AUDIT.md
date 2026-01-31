@@ -34,6 +34,20 @@ Provide these to the reviewer:
 
 **If you can't articulate #3-5 clearly, stop. Define these first. A tool without a clear user and job will fail regardless of execution.**
 
+### For Maximum Value
+
+Request the reviewer to:
+
+1. **Actually navigate and use the tool** - Don't just view screenshots. Use browser tools to complete the core task as a first-time user. This catches friction you've become blind to.
+
+2. **Search your target keyword and compare to competitors** - Before auditing, search the primary keyword and analyze top 3 results. Relative quality matters more than absolute.
+
+3. **Attempt to argue why the tool shouldn't exist** - The strongest test of value. If the argument has merit, address it before optimizing anything else.
+
+4. **Provide file-level code changes, not abstract suggestions** - Every recommendation should include the specific file and change needed. "Improve the CTA" is not actionable.
+
+5. **Include any available analytics data** - Bounce rate, time on page, conversion funnel drop-offs, actual search queries. Real data beats speculation.
+
 ---
 
 ## Part 1: User Value (The Most Important Part)

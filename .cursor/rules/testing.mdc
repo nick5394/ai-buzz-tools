@@ -1,0 +1,110 @@
+---
+description: Testing patterns and checklist for test files
+globs:
+  - tests/**
+  - pytest.ini
+alwaysApply: false
+---
+
+# Testing Guide
+
+## Quick Commands
+
+```bash
+# Run tests for a specific tool
+pytest tests/test_{tool}.py -v
+
+# Run widget integration tests
+pytest tests/test_widget_integration.py -v
+
+# Run with visible browser (debugging)
+pytest tests/test_widget_integration.py --headed
+
+# Start server for manual testing
+uvicorn main:app --reload
+```
+
+## Test Structure Pattern
+
+```python
+class Test{ToolName}Main:
+    """Test main functionality endpoint."""
+
+class Test{ToolName}Data:
+    """Test data listing endpoint."""
+
+class Test{ToolName}Subscribe:
+    """Test email subscription."""
+
+class Test{ToolName}Widget:
+    """Test widget endpoint."""
+```
+
+## Common Fixtures
+
+Available in `tests/conftest.py`:
+
+| Fixture | Scope | Purpose |
+|---------|-------|---------|
+| `client` | function | FastAPI test client |
+| `browser` | session | Playwright browser |
+| `page` | function | Playwright page |
+| `test_server` | session | Local server on port 8765 |
+
+## Pre-Development Checklist
+
+Before writing tests for a new tool:
+
+- [ ] Data file created with `_metadata` section
+- [ ] API router created following existing patterns
+- [ ] Pydantic models defined for request/response
+
+## Required Endpoints to Test
+
+- [ ] Main functionality endpoint (POST + GET versions)
+- [ ] Data listing endpoint (`/patterns`, `/models`, or `/providers`)
+- [ ] Email subscription endpoint (`/alerts/subscribe`)
+- [ ] Widget endpoint (`/widget`)
+
+## Widget Test Requirements
+
+- [ ] Self-contained (CSS + JS inline)
+- [ ] Mobile responsive (test at 375px)
+- [ ] Share URLs point to `ai-buzz.com`
+- [ ] Matches existing widget style
+
+## Testing Requirements
+
+- [ ] Unit tests written (`tests/test_{tool}.py`)
+- [ ] Widget integration tests written
+- [ ] All tests pass: `pytest`
+- [ ] Manual testing on localhost
+
+## Debugging Tips
+
+### View Browser During Tests
+
+```bash
+pytest tests/test_widget_integration.py --headed
+```
+
+### Pause for Inspection
+
+Add to test code:
+```python
+await page.pause()  # Opens Playwright inspector
+```
+
+### Check Test Server
+
+```bash
+# In one terminal
+uvicorn main:app --port 8765
+
+# In another terminal
+curl http://localhost:8765/health
+```
+
+## Reference
+
+- **Test reference:** `tests/test_error_decoder.py`

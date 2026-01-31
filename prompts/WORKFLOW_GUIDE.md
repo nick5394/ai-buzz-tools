@@ -1,8 +1,3 @@
----
-description: Prompt templates and human review checkpoints - reference for the human
-alwaysApply: false
----
-
 # Workflow Guide
 
 This file is for YOUR reference when working with AI agents.

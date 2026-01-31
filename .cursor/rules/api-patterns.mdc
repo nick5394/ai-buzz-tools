@@ -1,0 +1,111 @@
+---
+description: Code patterns for API routers, widgets, and data files
+globs:
+  - api/**
+  - widgets/**
+  - data/**
+alwaysApply: false
+---
+
+# API & Widget Patterns
+
+## Architecture
+
+All tools follow these patterns:
+- **FastAPI** with Pydantic models for validation
+- **Self-contained widgets** (HTML+CSS+JS in one file)
+- **JSON data files** with `_metadata` section
+- **Mailchimp integration** for email (graceful fallback if not configured)
+- **Share URLs** point to `ai-buzz.com` (never Render URLs)
+- **Mobile-first** responsive design (test at 375px)
+
+## Code Patterns
+
+### API Error Handling
+
+```python
+try:
+    data = load_json_data("your_data.json")
+    # ... process ...
+except FileNotFoundError:
+    logger.error("your_data.json not found")
+    raise HTTPException(status_code=500, detail="Data not available.")
+except Exception as e:
+    logger.error(f"Error processing: {str(e)}", exc_info=True)
+    raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+```
+
+### Widget CSS Variables
+
+Copy these exactly:
+
+```css
+--primary-color: #2563eb;
+--primary-hover: #1d4ed8;
+--success-color: #10b981;
+--error-color: #ef4444;
+--warning-color: #f59e0b;
+--text-primary: #1f2937;
+--text-secondary: #6b7280;
+--bg-primary: #ffffff;
+--bg-secondary: #f9fafb;
+--border-color: #e5e7eb;
+--border-radius: 12px;
+```
+
+### Widget API Base URL
+
+At top of widget JS:
+
+```javascript
+const API_BASE = window.API_BASE_URL || "https://ai-buzz-tools.onrender.com";
+```
+
+## Security Best Practices
+
+- **Input validation:** All API inputs validated via Pydantic models (never trust client data)
+- **XSS prevention:** Widgets use `textContent` instead of `innerHTML` for user-provided data
+- **No secrets in code:** API keys, tokens in environment variables only (never committed)
+- **CORS:** Configured in `main.py` - only allow trusted origins in production
+- **Error messages:** Never expose stack traces or internal paths to users
+
+## Performance Guidelines
+
+- **Widget load time:** Target <2 seconds on 3G connection
+- **API response time:** <500ms cached, <3s acceptable for cold starts (Render free tier)
+- **No external dependencies in widgets:** All CSS/JS inline (no CDN requests)
+- **Minimize DOM operations:** Batch updates, avoid layout thrashing
+- **JSON data files:** Keep under 100KB each for fast parsing
+
+## Accessibility Basics
+
+- **ARIA labels:** All interactive elements (buttons, inputs) have descriptive labels
+- **Keyboard navigation:** Tab order logical, Enter/Space activate controls
+- **Color contrast:** Meet WCAG AA (4.5:1 for text, 3:1 for large text)
+- **Focus indicators:** Visible focus states on all interactive elements
+- **Screen reader friendly:** Meaningful alt text, proper heading hierarchy
+
+## Data File Structure
+
+Every JSON data file has `_metadata` at top:
+
+```json
+{
+  "_metadata": {
+    "source": "Official documentation URL",
+    "last_updated": "2026-01-15",
+    "version": "1.0"
+  },
+  // ... actual data ...
+}
+```
+
+## Widget Structure
+
+Self-contained HTML file with:
+
+1. `<style>` block with CSS variables
+2. `<div>` container with all UI
+3. `<script>` block with all JS logic
+4. Loading states and error handling
+5. Mobile responsive (test at 375px)

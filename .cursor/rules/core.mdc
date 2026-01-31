@@ -1,0 +1,126 @@
+---
+description: Core rules for AI-Buzz Tools - essentials for every conversation
+alwaysApply: true
+---
+
+# AI-Buzz Tools Core
+
+**Mission:** Help developers make better decisions about AI APIs.
+
+## Decision Framework
+
+When choosing between options:
+1. **Which maximizes user value?** → Choose that
+2. **Which is simpler?** → Choose that
+3. **Which is faster?** → Choose that
+4. **Which builds trust?** → Choose that
+
+### When In Doubt
+
+- **Scope unclear?** → Build the minimum viable version
+- **Multiple approaches?** → Ask which to use before building
+- **New pattern needed?** → Check if existing pattern works first
+- **Feature feels out of scope?** → Ask before building
+
+## File Protection
+
+### TIER 1: CRITICAL — STOP AND ASK
+
+Before modifying ANY of these files, you MUST:
+1. State: "I need to modify [filename] because [reason]"
+2. WAIT for user confirmation
+3. DO NOT proceed without explicit approval
+
+**Critical files:**
+- `main.py` — Application entry point
+- `api/shared.py` — Shared utilities used by every router
+- `requirements.txt` — Deployment dependencies
+- `tests/conftest.py` — Test infrastructure
+- `.cursor/rules/*.mdc` — The rules themselves
+
+### TIER 2: STABLE — Follow Existing Patterns
+
+Modify but follow patterns exactly. No architectural changes without discussion.
+- `api/*.py` — Copy patterns from `error_decoder.py`
+- `data/*.json` — Maintain `_metadata` structure
+- `widgets/*.html` — Maintain CSS variables, self-contained structure
+- `tests/test_*.py` — Follow class-per-endpoint pattern
+
+### TIER 3: STANDARD — Normal Development
+
+- `scripts/*.py`, `scripts/*.sh`
+- `services/*.py`
+- `content/tools/*.html`
+
+### FILE CREATION
+
+**NEVER create new files without explicit request:**
+- Root directory (`/`)
+- `api/`, `data/`, `widgets/`
+
+**Allowed (can create without asking):**
+- `tests/` — New test files following `test_*.py` naming
+- `scripts/` — New utility scripts
+
+## Completion Requirements
+
+Before ending your response, verify:
+
+1. **ALL todos addressed** — Check each explicitly
+2. **No deferred work** — No "I'll handle this later"
+3. **Status report** — List what was completed
+
+### Testing Triggers
+
+After modifying files in `api/`, `data/`, `widgets/`, or `tests/`:
+```bash
+pytest tests/test_{tool}.py -v
+```
+
+If tests FAIL, fix them before moving on.
+
+### Verification Gates
+
+Before marking ANY task complete:
+1. **READ** the modified file to confirm changes
+2. **RUN** relevant tests
+3. **CHECK** for linter errors
+
+## Scope Discipline
+
+- If user asked for X, implement X — not X + Y + Z
+- If you think Y would be useful, ASK first
+- "Nice to have" is not in scope unless user says so
+
+## Reference Implementation
+
+**When building a new tool, copy from error_decoder.** It's the cleanest implementation.
+
+| Component | Reference File |
+|-----------|----------------|
+| API Router | `api/error_decoder.py` |
+| Data File | `data/error_patterns.json` |
+| Widget | `widgets/error_decoder_widget.html` |
+| Tests | `tests/test_error_decoder.py` |
+
+## Boundaries
+
+**Don't do these without explicit approval:**
+
+- Don't add new pip dependencies
+- Don't create new architectural patterns when existing ones work
+- Don't refactor working code unless explicitly asked
+- Don't build features not in the current roadmap
+- Don't change `api/shared.py` without considering impact
+- Don't use React/Vue/build tools — vanilla HTML/CSS/JS only
+- Don't point share URLs to Render — always use ai-buzz.com
+- Don't create markdown files (`.md`) — documentation lives in cursor rules (`.mdc`)
+
+## Conditional Rules
+
+Domain-specific rules load automatically:
+- Editing `api/`, `widgets/`, `data/` → `api-patterns.mdc` loads
+- Editing `content/` → `content.mdc` loads
+- Editing `tests/` → `testing.mdc` loads
+
+For project status/roadmap: reference `@project-status.mdc`

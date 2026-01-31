@@ -1,0 +1,72 @@
+---
+description: Project status, roadmap, and infrastructure - reference with @project-status.mdc
+alwaysApply: false
+---
+
+# Project Status
+
+## Mission
+
+Build free, genuinely useful tools for AI developers to validate demand, grow an email list, and help people.
+
+## Success Metrics
+
+- **Primary:** Someone reaches out saying "thank you"
+- **Secondary:** Email subscriber growth (target: 500 in 3 months)
+- **Tertiary:** Organic search traffic to tools
+
+## Constraints
+
+- Solo developer — limited maintenance bandwidth
+- $0-20/month budget — free tiers (Render, Mailchimp)
+- Tools run themselves — no manual maintenance required
+- No user accounts — tools are free and anonymous
+
+## Current Status
+
+### Completed
+
+| Tool | URL | Status |
+|------|-----|--------|
+| Pricing Calculator | `/ai-pricing-calculator` | Done |
+| Status Page | `/ai-status` | Done |
+| Error Decoder | `/ai-error-decoder` | Done |
+
+### Planned
+
+| Tool | User Problem | Status |
+|------|--------------|--------|
+| Tools Landing Page | "Show me all the tools" | Planned |
+
+## Infrastructure
+
+| System | Purpose | Details |
+|--------|---------|---------|
+| WordPress | Frontend | ai-buzz.com, Bricks Builder |
+| Render | Backend hosting | Free tier, auto-deploy from GitHub |
+| Mailchimp | Email capture | Single list, segmented by tags |
+| GA4 | Analytics | gtag.js events from widgets |
+
+### Key URLs
+
+- **Site:** ai-buzz.com
+- **API:** Deployed on Render (auto-deploy on push to main)
+- **Share URLs:** Always point to ai-buzz.com (never Render URLs)
+
+## What "Done" Looks Like
+
+For each tool:
+
+1. API endpoints deployed on Render
+2. Widget HTML created (self-contained)
+3. Widget embedded on WordPress page via Bricks
+4. Email capture working with correct Mailchimp tags
+5. GA4 events firing for key actions
+6. Share URL points to ai-buzz.com
+7. Works on mobile (375px)
+8. Handles API cold starts gracefully
+
+## Known Issues / Tech Debt
+
+- Render free tier cold starts (10-30s) — widgets handle gracefully
+- No CI/CD pipeline yet (manual `pytest` for now)

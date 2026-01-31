@@ -1,0 +1,174 @@
+---
+description: SEO standards and WordPress workflow for content pages
+globs:
+  - content/**
+alwaysApply: false
+---
+
+# Content & SEO Standards
+
+## Source of Truth
+
+HTML files in `content/tools/` are the source of truth for WordPress pages.
+- File format: `.html` with YAML frontmatter
+- Template: `content/tools/_template.html`
+
+## Before Creating Any New Page
+
+Answer these questions. If you can't, DO NOT create the page.
+
+1. **What specific query is someone typing to find this?**
+   - Must be a real search query, not marketing-speak
+   - "openai 429 error fix" (good) vs "API Excellence Guide" (bad)
+
+2. **What makes this page better than top 3 Google results?**
+   - If you can't articulate this, don't create the page
+
+3. **Would this cannibalize an existing page?**
+   - If >50% overlap with existing page, expand that page instead
+
+## Content Requirements
+
+### Minimum Standards
+
+| Page Type | Min Lines | Required Elements |
+|-----------|-----------|-------------------|
+| Tool page | 100+ | Widget, How to Use (3 steps), FAQ (5+), Related Tools (3-5) |
+| Guide page | 200+ | Code examples (2+), troubleshooting steps, FAQ (5+) |
+| Comparison | 150+ | Comparison table, "when to choose X" sections |
+
+### Required Sections
+
+1. **Title (H1)** — Must target the primary search query
+2. **Intro paragraph** — 2-3 sentences explaining the problem
+3. **Widget embed** — If applicable
+4. **Substantive body content** — NOT just template boilerplate
+5. **FAQ section** — Minimum 5 questions, including "Is this tool free?"
+6. **Related Tools** — 3-5 internal links
+
+### What "Substantive" Means
+
+At least ONE of:
+- Working code examples (Python, Node.js, etc.)
+- Comparison tables with real numbers
+- Step-by-step troubleshooting guides
+- Common mistakes and how to avoid them
+
+Template sections alone do NOT make a page valuable.
+
+## SEO Technical Requirements
+
+- `seo_title`: Under 60 characters, includes primary keyword
+- `seo_description`: Under 155 characters, includes value proposition
+- H1 must closely match the primary search query
+- Slug format: `ai-{descriptive-slug}`
+
+### Internal Linking
+
+- Every page links OUT to 3-5 related tools/guides
+- Every NEW page must be linked FROM at least 2 existing pages
+- Use descriptive anchor text (not "click here")
+
+## WordPress Workflow
+
+### Push Commands
+
+```bash
+# Single page
+python scripts/wp_pages.py push --file content/tools/{slug}.html
+
+# All pages
+python scripts/wp_pages.py push-all
+```
+
+### After Pushing: Verify with MCP Browser
+
+1. Navigate to the page:
+```
+CallMcpTool: cursor-browser-extension / browser_navigate
+Arguments: {"url": "https://www.ai-buzz.com/{slug}"}
+```
+
+2. Take a snapshot to verify:
+```
+CallMcpTool: cursor-browser-extension / browser_snapshot
+```
+
+3. Check for:
+   - Page title matches expected
+   - Tables render properly (not raw markdown)
+   - Code blocks have proper formatting
+   - Widget embeds load
+   - Links work
+
+### Content Template Structure
+
+Frontmatter (YAML):
+- `title` - Page title
+- `slug` - URL slug (e.g., `ai-pricing-calculator`)
+- `status` - `publish` or `draft`
+- `seo_title` - AIOSEO title (under 60 chars)
+- `seo_description` - Meta description (under 155 chars)
+- `widget_endpoint` - API path for widget
+
+### Widget Embedding
+
+In WordPress/Bricks, use:
+
+```html
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
+```
+
+Tool names: `pricing`, `status`, `error-decoder`
+
+## Site Structure
+
+### Content Types
+
+- **Tool Pages** (WordPress Pages): `/ai-pricing-calculator`, `/ai-status`, `/ai-error-decoder`, `/ai-tools` (hub)
+- **Guide Posts** (WordPress Posts): Category "AI Developer Tools", e.g., `/ai-openai-429-errors`
+- **Category Archive**: `/ai-developer-tools/` - lists all guide posts
+
+### CLI Quick Reference
+
+```bash
+# Pages (tools)
+python scripts/wp_pages.py push --file content/tools/ai-*.html
+python scripts/wp_pages.py push-all
+
+# Posts (guides)
+python scripts/wp_pages.py push-post --file content/tools/ai-*.html
+python scripts/wp_pages.py push-guides
+
+# Other commands
+python scripts/wp_pages.py list
+python scripts/wp_pages.py pull --slug ai-pricing-calculator
+python scripts/wp_pages.py diff --slug ai-pricing-calculator
+```
+
+### Troubleshooting
+
+- **Widget not loading**: Check `data-tool` attribute matches valid tool name (`pricing`, `status`, `error-decoder`)
+- **Page not found**: Verify slug with `wp_pages.py list`
+- **WordPress not configured**: Check `.env` has `WORDPRESS_SITE_URL`, `WORDPRESS_USERNAME`, `WORDPRESS_APP_PASSWORD`
+
+## Quality Checklist
+
+Before pushing any content:
+
+- [ ] Search query identified
+- [ ] Meets minimum line count
+- [ ] Has substantive content (code, tables, or guidance)
+- [ ] No duplication with existing pages
+- [ ] SEO meta complete (<60 title, <155 description)
+- [ ] Links to 3-5 related pages
+- [ ] FAQ has 5+ questions including "Is this free?"
+
+**If any checkbox fails, do not publish.**
+
+## Reference Implementation
+
+Use `ai-openai-429-errors.html` as the reference — 310 lines of substantive content with code examples, common mistakes, and real troubleshooting steps.
