@@ -53,11 +53,11 @@ Before creating, search existing content:
 
 ### Minimum Standards by Page Type
 
-| Page Type | Min Lines | Required Elements |
-|-----------|-----------|-------------------|
-| Tool page (widget-focused) | 100+ | Widget, How to Use (3 steps), FAQ (5+ questions), Related Tools (3-5 links) |
-| Guide page (content-focused) | 200+ | Code examples (2+), troubleshooting steps, common mistakes section, FAQ (5+) |
-| Comparison page | 150+ | Comparison table, specific numbers, "when to choose X" sections, real-world cost examples |
+| Page Type                    | Min Lines | Required Elements                                                                         |
+| ---------------------------- | --------- | ----------------------------------------------------------------------------------------- |
+| Tool page (widget-focused)   | 100+      | Widget, How to Use (3 steps), FAQ (5+ questions), Related Tools (3-5 links)               |
+| Guide page (content-focused) | 200+      | Code examples (2+), troubleshooting steps, common mistakes section, FAQ (5+)              |
+| Comparison page              | 150+      | Comparison table, specific numbers, "when to choose X" sections, real-world cost examples |
 
 ### Required Sections for ALL Pages
 
@@ -151,12 +151,13 @@ Update content when:
 
 Merge pages when:
 
-- >50% content overlap
+- > 50% content overlap
 - Targeting the same primary keyword
 - One page is thin (<80 lines) and the other covers the topic better
 - Search console shows both pages competing for same queries
 
 **How to merge:**
+
 1. Identify the stronger page (more content, better rankings)
 2. Move unique content from weaker page to stronger page
 3. Set up 301 redirect from old URL to new URL
@@ -177,7 +178,7 @@ Delete pages when:
 
 ## Reference: Best-in-Class Content
 
-Use [`ai-openai-429-errors.md`](../content/tools/ai-openai-429-errors.md) as the reference implementation. It has:
+Use [`ai-openai-429-errors.html`](../content/tools/ai-openai-429-errors.html) as the reference implementation. It has:
 
 - **310 lines** of substantive content
 - **Clear problem statement** in the intro
@@ -194,25 +195,25 @@ All new guide content should aim for this level of depth.
 
 ### Status: KEEP (High Quality)
 
-| File | Lines | Notes |
-|------|-------|-------|
-| `ai-openai-429-errors.md` | 310 | Reference implementation. Excellent depth. |
-| `ai-pricing-calculator.md` | 187 | Good depth, comparison tables, real examples. |
-| `ai-tools.md` | 83 | Landing page. Serves its purpose. |
+| File                         | Lines | Notes                                         |
+| ---------------------------- | ----- | --------------------------------------------- |
+| `ai-openai-429-errors.html`  | 310   | Reference implementation. Excellent depth.    |
+| `ai-pricing-calculator.html` | 187   | Good depth, comparison tables, real examples. |
+| `ai-tools.html`              | 83    | Landing page. Serves its purpose.             |
 
-### Status: EXPAND (Too Thin)
+### Status: KEEP (Expanded)
 
-| File | Lines | Action Needed |
-|------|-------|---------------|
-| `ai-error-decoder.md` | 52 | Currently template-level. Add error examples, common patterns, provider-specific sections. Target 150+ lines. |
-| `ai-status.md` | 144 | Good base. Absorb content from ai-is-openai-down.md. Add "Is OpenAI Down?" section at top. |
+| File                    | Lines | Notes                                                                 |
+| ----------------------- | ----- | --------------------------------------------------------------------- |
+| `ai-error-decoder.html` | 395   | Comprehensive error reference for all providers. Absorbed ai-openai-errors content. |
+| `ai-status.html`        | 144   | Status checker with "Is OpenAI Down?" content.                        |
 
-### Status: MERGED (Completed)
+### Status: MERGED (Completed Jan 2026)
 
 The following pages were consolidated:
 
-- `ai-is-openai-down.md` → merged into `ai-status.md` (set up 301 redirect in WordPress)
-- `ai-openai-errors.md` → merged into `ai-error-decoder.md` (set up 301 redirect in WordPress)
+- `ai-is-openai-down.html` → merged into `ai-status.html` (301 redirect configured)
+- `ai-openai-errors.html` → merged into `ai-error-decoder.html` (301 redirect: user to configure in AIOSEO)
 
 ---
 

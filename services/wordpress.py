@@ -449,12 +449,14 @@ class WordPressService:
             logger.error(f"Error updating post {post_id}: {e}")
             return None
     
-    def get_or_create_category(self, name: str, slug: str = None) -> Optional[int]:
+    def get_or_create_category(self, name: str, slug: str = None, description: str = None, parent: int = 0) -> Optional[int]:
         """Get category ID by name, or create it if it doesn't exist.
         
         Args:
             name: Category name
             slug: Category slug (optional, derived from name if not provided)
+            description: Category description (optional)
+            parent: Parent category ID (0 for top-level)
             
         Returns:
             Category ID if successful, None if failed
@@ -480,6 +482,10 @@ class WordPressService:
             cat_data = {'name': name}
             if slug:
                 cat_data['slug'] = slug
+            if description:
+                cat_data['description'] = description
+            if parent > 0:
+                cat_data['parent'] = parent
                 
             response = self._request_with_retry(
                 'post',
@@ -499,6 +505,115 @@ class WordPressService:
         except Exception as e:
             logger.error(f"Error with category '{name}': {e}")
             return None
+    
+    def get_category_by_slug(self, slug: str) -> Optional[Dict[str, Any]]:
+        """Get a category by its slug.
+        
+        Args:
+            slug: Category slug (e.g., 'ai-developer-tools')
+            
+        Returns:
+            Category dict if found, None if not found
+        """
+        try:
+            response = self._request_with_retry(
+                'get',
+                f"{self.api_url}/categories",
+                params={'slug': slug, 'per_page': 1},
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                categories = response.json()
+                if categories:
+                    return categories[0]
+            return None
+                
+        except Exception as e:
+            logger.error(f"Error getting category by slug '{slug}': {e}")
+            return None
+    
+    def list_categories(self, per_page: int = 100) -> List[Dict[str, Any]]:
+        """List all categories with pagination.
+        
+        Args:
+            per_page: Number of categories to fetch per page (max 100)
+            
+        Returns:
+            List of category dictionaries
+        """
+        try:
+            all_categories = []
+            page = 1
+            
+            while True:
+                response = self._request_with_retry(
+                    'get',
+                    f"{self.api_url}/categories",
+                    params={
+                        'per_page': min(per_page, 100),
+                        'page': page,
+                        'orderby': 'name',
+                        'order': 'asc'
+                    },
+                    auth=self.auth,
+                    headers={'Accept': 'application/json'},
+                    timeout=10
+                )
+                
+                if response.status_code != 200:
+                    logger.error(f"Failed to fetch categories: Status {response.status_code}")
+                    break
+                    
+                categories = response.json()
+                if not categories:
+                    break
+                    
+                all_categories.extend(categories)
+                
+                total_pages = int(response.headers.get('X-WP-TotalPages', 1))
+                if page >= total_pages:
+                    break
+                    
+                page += 1
+            
+            return all_categories
+            
+        except Exception as e:
+            logger.error(f"Error fetching categories: {e}")
+            return []
+    
+    def delete_category(self, category_id: int) -> bool:
+        """Delete a category by ID.
+        
+        Args:
+            category_id: WordPress category ID
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            response = self._request_with_retry(
+                'delete',
+                f"{self.api_url}/categories/{category_id}",
+                params={'force': True},
+                auth=self.auth,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
+            
+            if response.status_code in [200, 204]:
+                logger.info(f"Deleted category ID: {category_id}")
+                return True
+            else:
+                logger.error(f"Failed to delete category: Status {response.status_code}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error deleting category {category_id}: {e}")
+            return False
 
     def update_aioseo_meta(self, page_id: int, meta: Dict[str, str]) -> bool:
         """Update AIOSEO meta data for a page.

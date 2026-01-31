@@ -172,17 +172,32 @@ Done when:
 
 Tool pages are managed via WordPress REST API. Content templates in `content/tools/` are the source of truth. CLI tool handles push/pull operations.
 
+For detailed site structure documentation, see [SITE_STRUCTURE.md](../../../SITE_STRUCTURE.md).
+
+### Site Structure Summary
+
+**Three content pillars:**
+1. **AI News** - Timely news/analysis (Posts in "AI News and Industry Impact" category)
+2. **AI Tutorials & Guides** - Educational content for learners
+3. **AI Developer Tools** - Interactive tools + troubleshooting guides (our focus)
+
+**AI Developer Tools structure:**
+- **Tool Pages** (WordPress Pages): `/ai-pricing-calculator`, `/ai-status`, `/ai-error-decoder`
+- **Guide Posts** (WordPress Posts in "AI Developer Tools" category): `/ai-openai-429-errors`, `/ai-openai-rate-limits`, etc.
+- **Hub Page**: `/ai-tools` - Links to all tools and guides
+- **Category Archive**: `/ai-developer-tools/` - Lists all guide posts
+
 ### Commands
 
 ```bash
 # List all WordPress pages
 python scripts/wp_pages.py list
 
-# Pull page to local markdown (overwrites local file)
+# Pull page to local HTML (overwrites local file)
 python scripts/wp_pages.py pull --slug ai-pricing-calculator
 
 # Push local content to WordPress
-python scripts/wp_pages.py push --file content/tools/pricing-calculator.md
+python scripts/wp_pages.py push --file content/tools/pricing-calculator.html
 
 # Show diff between local and remote
 python scripts/wp_pages.py diff --slug ai-pricing-calculator
@@ -190,7 +205,7 @@ python scripts/wp_pages.py diff --slug ai-pricing-calculator
 
 ### Content Template Structure
 
-Every tool page has a markdown file in `content/tools/` with:
+Every tool page has an HTML file in `content/tools/` with:
 
 **Frontmatter (YAML):**
 
@@ -229,9 +244,9 @@ The JS loader fetches widget HTML client-side, bypassing WordPress caching entir
 
 After completing API and widget:
 
-1. Create `content/tools/{tool-slug}.md` using `_template.md` as base
+1. Create `content/tools/{tool-slug}.html` using `_template.html` as base
 2. Write intro, FAQ, and SEO meta specific to the tool
-3. Test locally, then push: `python scripts/wp_pages.py push --file content/tools/{tool-slug}.md`
+3. Test locally, then push: `python scripts/wp_pages.py push --file content/tools/{tool-slug}.html`
 4. In WordPress: Add script tag directly in page content (HTML block in Block Editor, or paste in Text mode in Classic Editor)
 5. Verify page loads correctly at `ai-buzz.com/{slug}`
 

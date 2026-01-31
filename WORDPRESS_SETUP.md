@@ -149,34 +149,36 @@ python scripts/validate_templates.py
 
 ## Content Architecture
 
-### Pages vs Posts
+For detailed site structure documentation, see [SITE_STRUCTURE.md](./SITE_STRUCTURE.md).
+
+### Quick Summary
 
 **Tool Pages (WordPress Pages)** - `content/tools/`
-- Interactive tools with widgets
-- Clean URLs: `/ai-pricing-calculator`
-- 4 pages: pricing-calculator, status, error-decoder, tools
+- Interactive tools with embedded widgets
+- Clean URLs: `/ai-pricing-calculator`, `/ai-status`, `/ai-error-decoder`
+- Hub page: `/ai-tools`
 
-**Guide Pages (WordPress Posts)** - `content/guides/`
-- Article content with guides and tutorials
-- Uses working post template for proper HTML rendering
-- 4 guides: openai-429-errors, openai-rate-limits, openai-vs-anthropic-pricing, openai-errors
-- Category: "AI Guides"
+**Guide Posts (WordPress Posts)** - `content/tools/`
+- Troubleshooting and reference content
+- Category: **AI Developer Tools** (top-level)
+- Examples: `/ai-openai-429-errors`, `/ai-openai-rate-limits`
 
-### Required Redirects
+**Category Archive**
+- URL: `/ai-developer-tools/`
+- Lists all guide posts in the AI Developer Tools category
 
-After migrating guides from Pages to Posts, set up 301 redirects to preserve SEO:
+### Managing Categories
 
-**In WordPress Redirection plugin or .htaccess:**
+```bash
+# List all categories
+python scripts/setup_developer_tools_category.py --list-categories
 
+# Create category and assign posts
+python scripts/setup_developer_tools_category.py
+
+# Dry run (see what would be done)
+python scripts/setup_developer_tools_category.py --dry-run
 ```
-# Old PAGE URLs → New POST URLs
-/ai-is-openai-down → /ai-status (merged content)
-
-# If post URLs differ from page URLs, add redirects like:
-# /page-slug → /post-slug
-```
-
-The guides should retain their slugs (`ai-openai-429-errors`, etc.) so redirects may not be needed if WordPress preserves the URL structure.
 
 ## Widget Embedding
 

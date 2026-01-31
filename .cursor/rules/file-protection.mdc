@@ -44,7 +44,7 @@ Can be modified following project conventions:
 
 - `scripts/*.py`, `scripts/*.sh`
 - `services/*.py`
-- `content/tools/*.md`
+- `content/tools/*.html`
 
 ---
 

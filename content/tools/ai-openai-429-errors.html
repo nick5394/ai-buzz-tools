@@ -1,54 +1,59 @@
 ---
-title: How to Handle OpenAI 429 Errors - Fix Rate Limit Issues
+title: How to Handle OpenAI 429 Errors &#8211; Fix Rate Limit Issues
 slug: ai-openai-429-errors
 status: publish
-category: AI Guides
-seo_title: How to Handle OpenAI 429 Errors - Fix Rate Limit Issues
-seo_description: Fix OpenAI 429 "Too Many Requests" errors. Code examples for Python, Node.js with exponential backoff, retry logic, and rate limiting.
+page_id: 14778
+seo_title: How to Fix OpenAI 429 Rate Limit Errors | Code Examples
+seo_description: Getting 429 errors from OpenAI? Fix rate limits with Python and Node.js code examples. Includes retry logic and prevention tips.
+widget_endpoint: /error-decoder/widget
 ---
 
-<p>Getting "Error 429: Too Many Requests" from OpenAI? This guide shows you exactly how to fix it with working code examples.</p>
+<p>
+  Getting &#8220;Error 429: Too Many Requests&#8221; from OpenAI? This guide
+  shows you exactly how to fix it with working code examples.
+</p>
 
-<script src="https://ai-buzz-tools.onrender.com/embed.js" data-tool="error-decoder"></script>
+<script
+  src="https://ai-buzz-tools.onrender.com/embed.js"
+  data-tool="error-decoder"
+></script>
 
 <h3>What Does 429 Mean?</h3>
-
-<p>A 429 error means you've exceeded OpenAI's rate limits. The API is rejecting your requests because you're making too many calls too quickly.</p>
-
-<strong>The error looks like:</strong>
-
+<p>
+  A 429 error means you&#8217;ve exceeded OpenAI&#8217;s rate limits. The API is
+  rejecting your requests because you&#8217;re making too many calls too
+  quickly.
+</p>
+<p><strong>The error looks like:</strong></p>
 <pre><code>openai.RateLimitError: Error code: 429 - Rate limit reached for gpt-4o
 </code></pre>
-
 <p>or</p>
-
 <pre><code>{"error": {"message": "Rate limit reached for gpt-4o in organization org-xxx on tokens per min (TPM): Limit 30000, Used 28500, Requested 5000.", "type": "rate_limit_error"}}
 </code></pre>
-
 <h3>Quick Fixes</h3>
-
 <h4>1. Wait and Retry</h4>
-
-<p>The simplest fix: wait a few seconds and try again. OpenAI rate limits reset every minute.</p>
-
+<p>
+  The simplest fix: wait a few seconds and try again. OpenAI rate limits reset
+  every minute.
+</p>
 <h4>2. Reduce Request Frequency</h4>
-
-<p>If you're making parallel requests, reduce concurrency or add delays between calls.</p>
-
+<p>
+  If you&#8217;re making parallel requests, reduce concurrency or add delays
+  between calls.
+</p>
 <h4>3. Use a Smaller Model</h4>
-
-<p>GPT-4o-mini has much higher rate limits than GPT-4o. If your task doesn't require the flagship model, switch.</p>
-
+<p>
+  GPT-4o-mini has much higher rate limits than GPT-4o. If your task
+  doesn&#8217;t require the flagship model, switch.
+</p>
 <h4>4. Check Your Tier</h4>
-
-<p>New accounts (Tier 1) have the lowest limits. See your <a href="/ai-openai-rate-limits">current limits</a> and how to upgrade.</p>
-
+<p>
+  New accounts (Tier 1) have the lowest limits. See your
+  <a href="/ai-openai-rate-limits">current limits</a> and how to upgrade.
+</p>
 <h3>Code Solutions</h3>
-
 <h4>Python: Exponential Backoff with tenacity</h4>
-
 <p>The most robust solution using the <code>tenacity</code> library:</p>
-
 <pre><code class="language-python">import openai
 from tenacity import retry, wait_exponential, retry_if_exception_type
 
@@ -65,20 +70,15 @@ def call_openai(prompt):
 # Usage
 response = call_openai("Hello, world!")
 </code></pre>
-
-<strong>How it works:</strong>
-
+<p><strong>How it works:</strong></p>
 <ul>
-<li>First retry waits 1 second</li>
-<li>Second retry waits 2 seconds</li>
-<li>Third retry waits 4 seconds</li>
-<li>Continues doubling up to 60 seconds max</li>
+  <li>First retry waits 1 second</li>
+  <li>Second retry waits 2 seconds</li>
+  <li>Third retry waits 4 seconds</li>
+  <li>Continues doubling up to 60 seconds max</li>
 </ul>
-
 <h4>Python: Manual Retry Logic</h4>
-
-<p>If you don't want extra dependencies:</p>
-
+<p>If you don&#8217;t want extra dependencies:</p>
 <pre><code class="language-python">import time
 import random
 import openai
@@ -102,9 +102,7 @@ def call_openai_with_retry(prompt, max_retries=5):
 # Usage
 response = call_openai_with_retry("Hello, world!")
 </code></pre>
-
 <h4>Node.js: Exponential Backoff</h4>
-
 <pre><code class="language-javascript">const OpenAI = require("openai");
 const openai = new OpenAI();
 
@@ -131,11 +129,8 @@ async function callOpenAIWithRetry(prompt, maxRetries = 5) {
 // Usage
 const response = await callOpenAIWithRetry("Hello, world!");
 </code></pre>
-
 <h4>Using the Retry-After Header</h4>
-
 <p>OpenAI sometimes tells you exactly how long to wait:</p>
-
 <pre><code class="language-python">import openai
 import time
 
@@ -157,13 +152,12 @@ def call_with_retry_header(prompt):
             print(f"Rate limited. Waiting {wait_time}s...")
             time.sleep(wait_time)
 </code></pre>
-
 <h3>Rate Limiting on Your End</h3>
-
-<p>Instead of hitting limits and retrying, prevent 429s by limiting your own request rate.</p>
-
+<p>
+  Instead of hitting limits and retrying, prevent 429s by limiting your own
+  request rate.
+</p>
 <h4>Python: Simple Rate Limiter</h4>
-
 <pre><code class="language-python">import time
 from threading import Lock
 
@@ -190,11 +184,8 @@ def call_openai_limited(prompt):
         messages=[{"role": "user", "content": prompt}]
     )
 </code></pre>
-
 <h4>Async Rate Limiter (Python)</h4>
-
 <p>For async code:</p>
-
 <pre><code class="language-python">import asyncio
 import time
 
@@ -221,86 +212,106 @@ async def call_openai_async(prompt):
         messages=[{"role": "user", "content": prompt}]
     )
 </code></pre>
-
 <h3>When to Use the Batch API</h3>
-
-<p>If your requests aren't time-sensitive, use OpenAI's Batch API:</p>
-
+<p>
+  If your requests aren&#8217;t time-sensitive, use OpenAI&#8217;s Batch API:
+</p>
 <ul>
-<li><strong>50% cheaper</strong> than regular API calls</li>
-<li><strong>Much higher rate limits</strong></li>
-<li>Results delivered within 24 hours</li>
+  <li><strong>50% cheaper</strong> than regular API calls</li>
+  <li><strong>Much higher rate limits</strong></li>
+  <li>Results delivered within 24 hours</li>
 </ul>
-
 <p>Best for: bulk processing, data analysis, non-real-time tasks.</p>
-
 <h3>Common Mistakes</h3>
-
 <h4>1. Not Adding Jitter</h4>
-
-<p>Without random jitter, all your retries happen at the same time, causing "thundering herd" issues.</p>
-
-<strong>Bad:</strong>
-
+<p>
+  Without random jitter, all your retries happen at the same time, causing
+  &#8220;thundering herd&#8221; issues.
+</p>
+<p><strong>Bad:</strong></p>
 <pre><code class="language-python">time.sleep(2 ** attempt)
 </code></pre>
-
-<strong>Good:</strong>
-
+<p><strong>Good:</strong></p>
 <pre><code class="language-python">time.sleep((2 ** attempt) + random.uniform(0, 1))
 </code></pre>
-
 <h4>2. Infinite Retries</h4>
-
 <p>Always set a max retry limit to avoid infinite loops.</p>
-
 <h4>3. Retrying Non-Retryable Errors</h4>
-
-<p>Only retry 429 errors. Other errors (401, 400) won't be fixed by retrying.</p>
-
+<p>
+  Only retry 429 errors. Other errors (401, 400) won&#8217;t be fixed by
+  retrying.
+</p>
 <h4>4. Ignoring TPM Limits</h4>
-
-<p>Even if you're under RPM limits, large prompts can exhaust TPM limits quickly.</p>
-
+<p>
+  Even if you&#8217;re under RPM limits, large prompts can exhaust TPM limits
+  quickly.
+</p>
 <h3>Preventing 429 Errors</h3>
-
-<strong>Best practices to avoid rate limits:</strong>
-
+<p><strong>Best practices to avoid rate limits:</strong></p>
 <ol>
-<li><strong>Implement caching</strong> - Don't call the API for the same prompt twice</li>
-<li><strong>Use smaller models</strong> - GPT-4o-mini has 10x higher limits</li>
-<li><strong>Batch requests</strong> - Use the Batch API for non-urgent tasks</li>
-<li><strong>Optimize prompts</strong> - Shorter prompts = more requests per minute</li>
-<li><strong>Upgrade your tier</strong> - Spend more to automatically get higher limits</li>
+  <li>
+    <strong>Implement caching</strong> &#8211; Don&#8217;t call the API for the
+    same prompt twice
+  </li>
+  <li>
+    <strong>Use smaller models</strong> &#8211; GPT-4o-mini has 10x higher
+    limits
+  </li>
+  <li>
+    <strong>Batch requests</strong> &#8211; Use the Batch API for non-urgent
+    tasks
+  </li>
+  <li>
+    <strong>Optimize prompts</strong> &#8211; Shorter prompts = more requests
+    per minute
+  </li>
+  <li>
+    <strong>Upgrade your tier</strong> &#8211; Spend more to automatically get
+    higher limits
+  </li>
 </ol>
-
 <h3>FAQ</h3>
-
 <h4>Why do I keep getting 429 errors even with retry logic?</h4>
-
-<p>Your base request rate is too high. Add rate limiting on your end to stay under limits, not just retry when you hit them.</p>
-
+<p>
+  Your base request rate is too high. Add rate limiting on your end to stay
+  under limits, not just retry when you hit them.
+</p>
 <h4>Can I catch 429 errors before they happen?</h4>
-
-<p>Yes, track your token usage and implement your own rate limiting to stay under OpenAI's limits proactively.</p>
-
+<p>
+  Yes, track your token usage and implement your own rate limiting to stay under
+  OpenAI&#8217;s limits proactively.
+</p>
 <h4>Does the Retry-After header always exist?</h4>
-
-<p>No. It's included sometimes but not guaranteed. Always have a fallback wait time.</p>
-
+<p>
+  No. It&#8217;s included sometimes but not guaranteed. Always have a fallback
+  wait time.
+</p>
 <h4>Will upgrading my account help?</h4>
-
-<p>Yes. Higher tiers have significantly higher rate limits. See <a href="/ai-openai-rate-limits">OpenAI Rate Limits by Tier</a>.</p>
-
+<p>
+  Yes. Higher tiers have significantly higher rate limits. See
+  <a href="/ai-openai-rate-limits">OpenAI Rate Limits by Tier</a>.
+</p>
 <h4>Is this tool free?</h4>
-
 <p>Yes, completely free. Paste any API error above to decode it instantly.</p>
+<p>
+  <a href="/ai-developer-tools/">Browse all AI Developer Tools</a> &#8594;
+</p>
 
 <h3>Related Tools</h3>
-
 <ul>
-<li><a href="/ai-openai-rate-limits">OpenAI Rate Limits Explained</a> - Full breakdown of limits by tier</li>
-<li><a href="/ai-error-decoder">AI Error Decoder</a> - Decode any API error message</li>
-<li><a href="/ai-status">AI Status Page</a> - Check if OpenAI is down</li>
-<li><a href="/ai-tools">All AI Developer Tools</a> - Browse all free tools</li>
+  <li>
+    <a href="/ai-openai-rate-limits">OpenAI Rate Limits Explained</a> &#8211;
+    Full breakdown of limits by tier
+  </li>
+  <li>
+    <a href="/ai-error-decoder">AI Error Decoder</a> &#8211; Decode any API
+    error message
+  </li>
+  <li>
+    <a href="/ai-status">AI Status Page</a> &#8211; Check if OpenAI is down
+  </li>
+  <li>
+    <a href="/ai-pricing-calculator">AI Pricing Calculator</a> &#8211; Compare
+    costs across providers
+  </li>
 </ul>
