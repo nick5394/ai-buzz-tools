@@ -26,7 +26,8 @@
       "fix": "1. Wait a few seconds and retry\n2. Implement exponential backoff in your code\n3. Upgrade your API tier for higher limits\n4. Use request queuing to manage concurrent requests",
       "severity": "warning",
       "common": true,
-      "docs_url": "https://platform.openai.com/docs/guides/rate-limits"
+      "docs_url": "https://platform.openai.com/docs/guides/rate-limits",
+      "code_snippet": "import time\nimport random\n\ndef call_with_retry(func, max_retries=5):\n    for attempt in range(max_retries):\n        try:\n            return func()\n        except RateLimitError:\n            wait = (2 ** attempt) + random.uniform(0, 1)\n            time.sleep(wait)\n    raise Exception(\"Max retries exceeded\")"
     },
     {
       "id": "openai_auth",
@@ -44,7 +45,8 @@
       "fix": "1. Check that your API key is correctly set in your code\n2. Verify the key starts with 'sk-'\n3. Check your OpenAI dashboard to ensure the key is active\n4. Generate a new API key if needed",
       "severity": "error",
       "common": true,
-      "docs_url": "https://platform.openai.com/docs/api-reference/authentication"
+      "docs_url": "https://platform.openai.com/docs/api-reference/authentication",
+      "code_snippet": "import os\nfrom openai import OpenAI\n\n# Verify API key is set\napi_key = os.getenv(\"OPENAI_API_KEY\")\nif not api_key:\n    raise ValueError(\"OPENAI_API_KEY not set\")\n\nclient = OpenAI(api_key=api_key)"
     },
     {
       "id": "openai_quota",
@@ -113,7 +115,8 @@
       "fix": "1. Wait and retry with exponential backoff\n2. Check your rate limits in the Anthropic dashboard\n3. Upgrade your tier for higher limits\n4. Reduce request frequency or batch requests",
       "severity": "warning",
       "common": true,
-      "docs_url": "https://docs.anthropic.com/claude/reference/rate-limits"
+      "docs_url": "https://docs.anthropic.com/claude/reference/rate-limits",
+      "code_snippet": "import anthropic\nimport time\n\ndef call_with_backoff(client, messages, max_retries=5):\n    for attempt in range(max_retries):\n        try:\n            return client.messages.create(\n                model=\"claude-sonnet-4-5-20250514\",\n                max_tokens=1024,\n                messages=messages\n            )\n        except anthropic.RateLimitError:\n            wait = (2 ** attempt) + 0.5\n            time.sleep(wait)\n    raise Exception(\"Max retries exceeded\")"
     },
     {
       "id": "anthropic_auth",

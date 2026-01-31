@@ -3,8 +3,10 @@ Error Decoder API Router
 Handles error decoding endpoints.
 """
 
+import json
 import logging
 import re
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
@@ -18,6 +20,35 @@ from api.analytics import track_error_decode
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# ============================================================================
+# Counter for tracking total decodes
+# ============================================================================
+
+COUNTER_FILE = Path(__file__).parent.parent / "data" / "decode_counter.json"
+
+
+def get_decode_count() -> int:
+    """Get total decode count from persistent storage."""
+    try:
+        if COUNTER_FILE.exists():
+            data = json.loads(COUNTER_FILE.read_text())
+            return data.get("count", 0)
+    except Exception:
+        pass
+    return 0
+
+
+def increment_decode_count() -> int:
+    """Increment and return the new decode count."""
+    count = get_decode_count() + 1
+    try:
+        COUNTER_FILE.parent.mkdir(parents=True, exist_ok=True)
+        COUNTER_FILE.write_text(json.dumps({"count": count}))
+    except Exception:
+        pass
+    return count
+
 
 # ============================================================================
 # Pydantic Models
@@ -35,6 +66,7 @@ class ErrorPattern(BaseModel):
     severity: str = Field(..., description="Error severity: error, warning")
     common: bool = Field(..., description="Whether this is a common error")
     docs_url: Optional[str] = Field(None, description="Link to documentation")
+    code_snippet: Optional[str] = Field(None, description="Code example for the fix")
 
 
 class DecodeRequest(BaseModel):
@@ -167,7 +199,10 @@ async def decode_error_message(request: DecodeRequest):
             matched=decoded is not None,
             pattern_id=decoded.pattern.id if decoded else None
         )
-        
+
+        # Increment global counter
+        increment_decode_count()
+
         suggestions = []
         if not decoded:
             # Provide general suggestions if no match found
@@ -203,6 +238,16 @@ async def decode_error_message_get(error_message: str):
     """
     request = DecodeRequest(error_message=error_message)
     return await decode_error_message(request)
+
+
+@router.get("/stats")
+async def get_stats():
+    """Get decoder statistics for display."""
+    error_data = load_json_data("error_patterns.json")
+    return {
+        "total_decoded": get_decode_count(),
+        "patterns_count": len(error_data.get("patterns", []))
+    }
 
 
 @router.get("/patterns", response_model=PatternsResponse)

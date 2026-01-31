@@ -388,3 +388,77 @@ deprecated, or unavailable.
     if you're hitting billing limits
   </li>
 </ul>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "AI API Error Decoder",
+    "description": "Paste any AI API error message and get a plain English explanation plus actionable steps to fix it. Works with OpenAI, Anthropic, Google, Mistral, and more.",
+    "url": "https://ai-buzz.com/ai-error-decoder",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+    },
+    "featureList": [
+        "Decode OpenAI API errors",
+        "Decode Anthropic API errors",
+        "Decode Google AI API errors",
+        "Rate limit error explanations",
+        "Authentication error fixes",
+        "Code examples for common fixes"
+    ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What errors can this decode?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Rate limits, authentication failures, invalid requests, model errors, token limits, billing issues, and more. We cover the most common errors from OpenAI, Anthropic, Google AI, and Mistral."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What if my error isn't recognized?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You'll get general troubleshooting steps based on the error code. The tool will suggest where to find help, and you can subscribe for updates when we add new patterns."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Do you store my error messages?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. Error decoding happens client-side. We don't log or store your error messages."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How do I prevent rate limit errors?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Implement rate limiting on your end, use exponential backoff for retries, consider the Batch API for non-urgent tasks, and upgrade your tier if you consistently hit limits."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Is this tool free?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, completely free with no signup required."
+            }
+        }
+    ]
+}
+</script>

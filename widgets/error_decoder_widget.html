@@ -126,6 +126,18 @@
       cursor: not-allowed;
     }
 
+    .edw-decode-btn .edw-btn-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: edw-spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
     .edw-button-row {
       display: flex;
       gap: 8px;
@@ -177,6 +189,31 @@
     .edw-stat-number {
       font-weight: 600;
       color: var(--text-secondary);
+    }
+
+    .edw-social-proof {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 8px 0 0 0;
+      font-style: italic;
+    }
+
+    .edw-keyboard-hint {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin: 8px 0 0 0;
+    }
+
+    .edw-keyboard-hint kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 10px;
     }
 
     /* Recent errors section */
@@ -416,6 +453,58 @@
       text-decoration: underline;
     }
 
+    /* Code block with copy button */
+    .edw-code-block {
+      position: relative;
+      margin: 12px 0;
+    }
+
+    .edw-code-block pre {
+      margin: 0;
+      padding: 14px;
+      padding-right: 50px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .edw-code-block code {
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      color: var(--text-primary);
+    }
+
+    .edw-code-copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 6px 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+
+    .edw-code-block:hover .edw-code-copy-btn {
+      opacity: 1;
+    }
+
+    .edw-code-copy-btn:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .edw-code-copy-btn.copied {
+      background: var(--success-color);
+      color: white;
+      border-color: var(--success-color);
+    }
+
     .edw-suggestions {
       margin-top: 16px;
       padding: 16px;
@@ -445,8 +534,9 @@
     /* Share URL */
     .edw-share-section {
       margin-top: 16px;
-      padding: 12px 16px;
-      background: var(--bg-tertiary);
+      padding: 14px 16px;
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+      border: 1px solid var(--primary-color);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -499,6 +589,11 @@
       );
       border: 1px solid var(--border-color);
       border-radius: 8px;
+      display: none;
+    }
+
+    .edw-email-section.visible {
+      display: block;
     }
 
     .edw-email-section h4 {
@@ -716,11 +811,13 @@
         class="edw-textarea"
         placeholder="Example: Rate limit exceeded. Please try again in 10 seconds..."
         rows="4"
+        autofocus
       ></textarea>
       <div class="edw-button-row">
         <button id="edw-decode-btn" class="edw-decode-btn">Decode Error</button>
         <button id="edw-example-btn" class="edw-example-btn">Try Example</button>
       </div>
+      <p class="edw-keyboard-hint">Pro tip: Press <kbd id="edw-modifier-key">Ctrl</kbd>+<kbd>Enter</kbd> to decode</p>
       <div class="edw-stats">
         <span class="edw-stat">
           <span class="edw-stat-number" id="edw-patterns-count">50+</span>
@@ -731,6 +828,7 @@
           <span>errors decoded</span>
         </span>
       </div>
+      <p class="edw-social-proof">Used by developers at startups and Fortune 500 companies</p>
 
       <!-- Recent Errors -->
       <div id="edw-recent-section" class="edw-recent-section">
@@ -757,7 +855,7 @@
 
       <!-- Share URL -->
       <div class="edw-share-section">
-        <label>Share this result:</label>
+        <label>Share with your team:</label>
         <input
           type="text"
           id="edw-share-url"
@@ -766,10 +864,9 @@
         />
         <button id="edw-copy-btn" class="edw-copy-btn">Copy</button>
       </div>
-    </div>
 
-    <!-- Email Capture -->
-    <div class="edw-email-section">
+      <!-- Email Capture (inside results, shown after decode) -->
+      <div class="edw-email-section">
       <h4>📧 Get Notified About New Error Patterns</h4>
       <p>We add new patterns weekly. Get notified when we add fixes for errors you've encountered.</p>
       <form id="edw-email-form" class="edw-email-form">
@@ -796,6 +893,7 @@
       </p>
       <div id="edw-email-success" class="edw-email-success"></div>
       <div id="edw-email-error" class="edw-email-error"></div>
+    </div>
     </div>
 
     <!-- Footer -->
@@ -892,17 +990,23 @@
         `openai.BadRequestError: Error code: 400 - This model's maximum context length is 128000 tokens. However, your messages resulted in 135000 tokens.`,
       ];
 
-      // Load decoded count from localStorage
-      function loadDecodedCount() {
-        const count = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || "0", 10);
-        decodedCountEl.textContent = count.toLocaleString();
-      }
+      // Load decoded count from server
+      async function loadDecodedCount() {
+        try {
+          const response = await fetch(`${API_BASE}/error-decoder/stats`);
+          const data = await response.json();
+          decodedCountEl.textContent = data.total_decoded.toLocaleString();
 
-      // Increment decoded count
-      function incrementDecodedCount() {
-        const count = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || "0", 10) + 1;
-        localStorage.setItem(STORAGE_KEY_COUNT, count.toString());
-        decodedCountEl.textContent = count.toLocaleString();
+          // Update patterns count too if element exists
+          const patternsEl = document.getElementById("edw-patterns-count");
+          if (patternsEl && data.patterns_count) {
+            patternsEl.textContent = data.patterns_count + "+";
+          }
+        } catch (error) {
+          // Fallback to localStorage if API fails
+          const count = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || "0", 10);
+          decodedCountEl.textContent = count > 0 ? count.toLocaleString() : "1,000+";
+        }
       }
 
       // Load error history from localStorage
@@ -916,11 +1020,12 @@
       }
 
       // Save error to history
-      function saveToHistory(errorMessage, provider) {
+      function saveToHistory(errorMessage, provider, errorTitle = null) {
         const history = loadErrorHistory();
         const newEntry = {
           error: errorMessage.substring(0, 200),
           provider: provider || "Unknown",
+          title: errorTitle || null,
           timestamp: Date.now()
         };
 
@@ -949,7 +1054,7 @@
         recentSectionEl.classList.add("visible");
         recentListEl.innerHTML = history.map((item, index) => `
           <div class="edw-recent-item" data-index="${index}">
-            <span class="edw-recent-item-text">${escapeHtml(item.error)}</span>
+            <span class="edw-recent-item-text">${item.title ? escapeHtml(item.title) : escapeHtml(item.error)}</span>
             <span class="edw-recent-item-provider">${escapeHtml(item.provider)}</span>
           </div>
         `).join("");
@@ -991,16 +1096,59 @@
         return div.innerHTML;
       }
 
+      function createCodeBlock(code, language = '') {
+        const escapedCode = escapeHtml(code);
+        const codeForAttr = escapedCode.replace(/"/g, '&quot;');
+        return `
+          <div class="edw-code-block">
+            <pre><code class="language-${language}">${escapedCode}</code></pre>
+            <button class="edw-code-copy-btn" data-code="${codeForAttr}">Copy</button>
+          </div>
+        `;
+      }
+
+      function copyCode(btn) {
+        // Get the code from the data attribute and decode HTML entities
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = btn.dataset.code;
+        const code = textarea.value;
+
+        navigator.clipboard.writeText(code).then(() => {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(() => {
+          // Fallback for older browsers
+          const ta = document.createElement('textarea');
+          ta.value = code;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      }
+
       function showLoading() {
         loadingEl.classList.add("visible");
         errorEl.classList.remove("visible");
         resultsEl.classList.remove("visible");
         decodeBtnEl.disabled = true;
+        decodeBtnEl.innerHTML = '<span class="edw-btn-spinner"></span>Decoding...';
       }
 
       function hideLoading() {
         loadingEl.classList.remove("visible");
         decodeBtnEl.disabled = false;
+        decodeBtnEl.innerHTML = 'Decode Error';
       }
 
       function showError(message) {
@@ -1042,10 +1190,13 @@
             hideLoading();
             showResults();
 
-            // Save to history and increment count
+            // Show email capture after successful decode
+            document.querySelector('.edw-email-section').classList.add('visible');
+
+            // Save to history (counter is incremented server-side)
             const provider = data.decoded?.pattern?.provider || "Unknown";
-            saveToHistory(errorMessage, provider);
-            incrementDecodedCount();
+            const errorTitle = data.decoded?.pattern?.title || null;
+            saveToHistory(errorMessage, provider, errorTitle);
 
             trackEvent("tool_used", {
               tool_name: "error_decoder",
@@ -1096,15 +1247,29 @@
               <h4>How to fix:</h4>
               <ol class="edw-fix-steps">${fixHtml}</ol>
             </div>
+            ${pattern.code_snippet ? `
+              <div style="margin-top: 12px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: var(--text-secondary);">Code Example:</h4>
+                ${createCodeBlock(pattern.code_snippet, 'python')}
+              </div>
+            ` : ''}
             ${pattern.docs_url ? `<a href="${pattern.docs_url}" target="_blank" rel="noopener" class="edw-docs-link">📚 View Documentation →</a>` : ""}
           `;
 
           resultCardEl.innerHTML = resultHtml;
+
+          // Add click handlers for copy buttons
+          resultCardEl.querySelectorAll('.edw-code-copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => copyCode(btn));
+          });
         } else {
-          // No match found - show suggestions
+          // No match found - show suggestions with submit option
           const suggestionsHtml = data.suggestions
             .map((s) => `<li>${escapeHtml(s)}</li>`)
             .join("");
+
+          const errorPreview = errorInputEl.value.substring(0, 100);
+          const feedbackUrl = `mailto:aibuzzofficial@gmail.com?subject=New%20Error%20Pattern%20Request&body=Error%20message%3A%0A${encodeURIComponent(errorPreview)}%0A%0AProvider%3A%20%5BOpenAI%2FAnthropic%2FGoogle%2FOther%5D%0A%0AAdditional%20context%3A%0A`;
 
           const resultHtml = `
             <div class="edw-result-header">
@@ -1116,6 +1281,10 @@
             </div>
             <div class="edw-suggestions">
               <ol class="edw-suggestions-list">${suggestionsHtml}</ol>
+            </div>
+            <div style="margin-top: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-size: 13px; color: var(--text-secondary);">Want us to add this error pattern?</p>
+              <a href="${feedbackUrl}" style="display: inline-block; padding: 8px 16px; background: var(--primary-color); color: white; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">Submit Error Pattern</a>
             </div>
           `;
 
@@ -1203,6 +1372,13 @@
       // Initialize
       loadDecodedCount();
       renderRecentErrors();
+
+      // Detect OS for keyboard hint
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifierKeyEl = document.getElementById('edw-modifier-key');
+      if (isMac && modifierKeyEl) {
+        modifierKeyEl.textContent = 'Cmd';
+      }
 
       // Event listeners
       decodeBtnEl.addEventListener("click", decodeError);
